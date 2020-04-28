@@ -1,0 +1,6 @@
+{
+    "DEFAULTS": {}, 
+    "URI": {
+        "USER_INFO": "https://www.toggl.com/api/v8/me"
+    }
+}
