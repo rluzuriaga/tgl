@@ -41,3 +41,7 @@ def delete_defaults() -> None:
 
     with open(config_file_path, 'w') as f:
         json.dump(config, f)
+
+def auth_from_config() -> Tuple[str, str]:
+    auth = (config['DEFAULTS']['API_KEY'], 'api_token')
+    return auth
