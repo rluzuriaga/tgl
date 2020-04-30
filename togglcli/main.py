@@ -46,8 +46,12 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     # togglcli current
-    cmd_current = commands_subparser.add_parser('current', help='Get current timer')
+    cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
     cmd_current.set_defaults(func=command_current)
+
+    # togglcli stop
+    cmd_stop = commands_subparser.add_parser('stop', help='Stop current timer.')
+    cmd_stop.set_defaults(func=command_stop)
 
     return parser
 
@@ -88,10 +92,8 @@ def command_setup(parser, args) -> None:
     print("\nData saved.")
 
 def command_start(parser, args) -> None:
-    # Check if setup was already ran/if the API key is already saved
-    if utils.are_defaults_empty():
-        sys.exit("Setup is not complete.\nPlease run 'togglcli setup' before you can run a timer.")
-    
+    check_if_setup_is_needed()
+
     authentication = utils.auth_from_config()
 
     # Check if authentication is correct/api_key wasn't changed
@@ -104,13 +106,22 @@ def command_start(parser, args) -> None:
     )
 
 def command_current(parser, args) -> None:
-    # Check if setup was already ran/if the API key is already saved
-    if utils.are_defaults_empty():
-        sys.exit("Setup is not complete.\nPlease run 'togglcli setup' before you can run a timer.")
+    check_if_setup_is_needed()
     
     authentication = utils.auth_from_config()
 
     timers.current_timer(authentication)
+
+def command_stop(parser, args) -> None:
+    check_if_setup_is_needed()
+    
+    authentication = utils.auth_from_config()
+
+    timers.stop_timer(authentication)
+
+def check_if_setup_is_needed() -> None:
+    if utils.are_defaults_empty():
+        sys.exit("Setup is not complete.\nPlease run 'togglcli setup' before you can run a timer.")
 
 if __name__ == "__main__":
     main(*sys.argv)

@@ -55,3 +55,35 @@ def current_timer(authentication: Tuple[str, str]) -> None:
     print("Current timer:")
     print(f"    Description:  {timer_description}")
     print(f"    Running time: {running_time}")
+
+def stop_timer(authentication: Tuple[str, str]) -> None:
+    current_url = config['URI']['CURRENT']
+    stop_url = config['URI']['STOP']
+
+    header = {"Content-Type": "application/json",}
+
+    response = requests.get(
+        current_url,
+        auth=authentication
+    )
+
+    response_json = response.json()
+    
+    if response_json['data'] is None:
+        sys.exit("There is no timer running.")
+
+    timer_id = response_json['data']['id']
+    timer_description = response_json['data']['description']
+
+    stop_url = stop_url.format(timer_id)
+
+    response = requests.put(
+        stop_url,
+        headers=header,
+        auth=authentication
+    )
+
+    if response.status_code == 200:
+        print(f'Timer "{timer_description}" stoped.')
+    else:
+        sys.exit(f"ERROR: Timer could not be stopped. Response: {response.status_code}")
