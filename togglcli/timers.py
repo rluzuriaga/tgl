@@ -39,6 +39,11 @@ def current_timer(authentication: Tuple[str, str]) -> None:
     )
 
     response_json = response.json()
+
+    # Check if there is a timer currently running
+    if response_json['data'] is None:
+        sys.exit("There is no timer currently running.")
+
     timer_description = response_json['data']['description']
     start_time = response_json['data']['start']
     
@@ -70,7 +75,7 @@ def stop_timer(authentication: Tuple[str, str]) -> None:
     response_json = response.json()
     
     if response_json['data'] is None:
-        sys.exit("There is no timer running.")
+        sys.exit("There is no timer currently running.")
 
     timer_id = response_json['data']['id']
     timer_description = response_json['data']['description']
