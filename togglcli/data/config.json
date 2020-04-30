@@ -2,6 +2,7 @@
     "DEFAULTS": {}, 
     "URI": {
         "USER_INFO": "https://www.toggl.com/api/v8/me", 
-        "START": "https://www.toggl.com/api/v8/time_entries/start"
+        "START": "https://www.toggl.com/api/v8/time_entries/start", 
+        "CURRENT": "https://www.toggl.com/api/v8/time_entries/current"
     }
 }

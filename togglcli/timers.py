@@ -28,3 +28,30 @@ def start_timer(description: str, authentication: Tuple[str, str]) -> None:
         print("Timer started.")
     else:
         sys.exit(f"ERROR: Timer not started. Response: {response.status_code}")
+
+def current_timer(authentication: Tuple[str, str]) -> None:
+    from datetime import datetime, timezone
+    url = config['URI']['CURRENT']
+    
+    response = requests.get(
+        url,
+        auth=authentication
+    )
+
+    response_json = response.json()
+    timer_description = response_json['data']['description']
+    start_time = response_json['data']['start']
+    
+    # Since Python 3.6 is supported, the ':' in the timezone has to be removed from the time
+    # This changed in Python 3.7 where %z can accept the ':' in the timezone
+    if start_time[-3] == ':':
+        start_time = start_time[:-3] + start_time[-2:]
+    
+    # Calculate how long the timer has been active
+    start_time_object = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S%z')
+    current_time_object = datetime.utcnow().replace(tzinfo=timezone.utc).replace(microsecond=0)
+    running_time = current_time_object - start_time_object
+
+    print("Current timer:")
+    print(f"    Description:  {timer_description}")
+    print(f"    Running time: {running_time}")
