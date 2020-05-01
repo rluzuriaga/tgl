@@ -44,6 +44,9 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_start.add_argument('description', 
         help='Timer description, use quotes around it unless it is one word.'
     )
+    cmd_start.add_argument('-p', '--project', required=False, dest='project',
+        action='store_true', help='Start timer in select project.'
+    )
 
     # togglcli current
     cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
@@ -61,7 +64,7 @@ def command_setup(parser, args) -> None:
         delete_data_input = input("User data is not empty. Do you want to reconfigure it? (y/N) ")
 
         if delete_data_input.lower() == 'y':
-            utils.delete_defaults()
+            utils.delete_user_data()
         else:
             sys.exit("Data was not changed.")
 
@@ -86,6 +89,7 @@ def command_setup(parser, args) -> None:
     # Check if the credentials are valid and then save the defaults to config.json
     if utils.are_credentials_valid(auth):
         utils.add_defaults_to_config(auth)
+        utils.add_projects_to_config(auth)
     else:
         sys.exit("\nError: Incorrect credentials.")
 
@@ -100,9 +104,19 @@ def command_start(parser, args) -> None:
     if not utils.are_credentials_valid(authentication):
         sys.exit("ERROR: Authentication error.\nRun 'togglcli setup' to reconfigure the data.")
     
+    project_id = ""
+    if args.project:
+        if utils.are_there_projects():
+            project_id = utils.project_selection()
+        else:
+            print("WARNING: You don't have any projects in your account.\n"
+                "  If you created one recently, please run 'togglcli setup' to reconfigure your data.\n"
+                "  Timer will be crated without project.\n")
+
     timers.start_timer(
         description=args.description,
-        authentication=authentication
+        authentication=authentication,
+        project_id=project_id
     )
 
 def command_current(parser, args) -> None:

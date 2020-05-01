@@ -3,6 +3,7 @@ import json
 import requests
 from typing import Tuple
 
+from togglcli import utils
 from togglcli.defaults import get_default_config_file_path
 
 config_file_path = get_default_config_file_path()
@@ -10,12 +11,17 @@ config_file_path = get_default_config_file_path()
 with open(config_file_path, 'r') as f:
     config = json.load(f)
 
-def start_timer(description: str, authentication: Tuple[str, str]) -> None:
+def start_timer(description: str, authentication: Tuple[str, str], project_id: str) -> None:
     url = config['URI']['START']
     workspace_id = config['DEFAULTS']['WID']
 
     header = {"Content-Type": "application/json",}
-    data = {'time_entry': {'description': description, 'wid': workspace_id, 'created_with': 'togglcli'}}
+    data = {'time_entry': {
+        'description': description, 
+        'wid': workspace_id, 
+        'pid': project_id, 
+        'created_with': 'togglcli'}
+    }
 
     response = requests.post(
         url,

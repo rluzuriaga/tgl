@@ -1,3 +1,4 @@
+import sys
 import json
 import requests
 from typing import Tuple
@@ -29,19 +30,59 @@ def add_defaults_to_config(authentication: Tuple[str, str]) -> None:
     config['DEFAULTS']['WID'] = str(data['default_wid'])
 
     with open(config_file_path, 'w') as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=4)
+
+def add_projects_to_config(authentication: Tuple[str, str]) -> None:
+    url_project = config['URI']['PROJECTS_FROM_WID']
+    url_project = url_project.format(config['DEFAULTS']['WID'])
+    
+    response = requests.get(url_project, auth=authentication)
+    project_data = response.json()
+
+    if project_data is not None:
+        projects_dict = dict()
+        for project in project_data:
+            projects_dict.update({str(project['id']): project['name']})
+        
+        config['PROJECTS'] = projects_dict
+            
+    with open(config_file_path, 'w') as f:
+        json.dump(config, f, indent=4)
 
 def are_defaults_empty() -> bool:
     if len(config['DEFAULTS']) == 0:
         return True
     return False
 
-def delete_defaults() -> None:
+def delete_user_data() -> None:
     config['DEFAULTS'].clear()
+    config['PROJECTS'].clear()
 
     with open(config_file_path, 'w') as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=4)
 
 def auth_from_config() -> Tuple[str, str]:
     auth = (config['DEFAULTS']['API_KEY'], 'api_token')
     return auth
+
+def are_there_projects() -> bool:
+    if len(config['PROJECTS']) == 0:
+        return False
+    return True
+
+def project_selection() -> str:
+    for i, project in enumerate(config['PROJECTS'].items()):
+        print(str(i + 1) + f": {project[1]}")
+
+    selection = input("Please enter the number of the project you want to use: ")
+    try:
+        selection = int(selection) - 1
+    except ValueError:
+        sys.exit("\nERROR: Selection entered was not a number.")
+
+    try:
+        project_id = list(config['PROJECTS'].keys())[selection]
+    except IndexError:
+        sys.exit("\nERROR: Selection not valid. Timer not started.")
+
+    return project_id
