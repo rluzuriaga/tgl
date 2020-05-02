@@ -47,6 +47,9 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_start.add_argument('-p', '--project', required=False, dest='project',
         action='store_true', help='Start timer in select project.'
     )
+    cmd_start.add_argument('-t', '--tags', required=False, dest='tags', default=[],
+        nargs='*', help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.'
+    )
 
     # togglcli current
     cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
@@ -112,6 +115,9 @@ def command_start(parser, args) -> None:
         if user_input != 'y':
             sys.exit("\nCurrent timer not stoped. You can use 'togglcli current' for more information of the current timer.")
 
+    # Check if user adds the project argument then calls a function to check
+    # if there are projects in the users account then call the function that asks
+    # the user what project to use.
     project_id = ""
     if args.project:
         if utils.are_there_projects():
@@ -124,7 +130,8 @@ def command_start(parser, args) -> None:
     timers.start_timer(
         description=args.description,
         authentication=authentication,
-        project_id=project_id
+        project_id=project_id,
+        tags=args.tags
     )
 
 def command_current(parser, args) -> None:
