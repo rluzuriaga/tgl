@@ -3,6 +3,7 @@ import json
 import requests
 from typing import Tuple
 
+from togglcli import timers
 from togglcli.defaults import get_default_config_file_path
 
 config_file_path = get_default_config_file_path()
@@ -86,3 +87,14 @@ def project_selection() -> str:
         sys.exit("\nERROR: Selection not valid. Timer not started.")
 
     return project_id
+
+def is_timer_running(authentication: Tuple[str, str]) -> bool:
+    url = config['URI']['CURRENT']
+
+    response = requests.get(url, auth=authentication)
+    response_json = response.json()
+
+    if response_json['data'] is None:
+        return False
+    
+    return True

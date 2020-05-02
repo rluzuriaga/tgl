@@ -104,6 +104,14 @@ def command_start(parser, args) -> None:
     if not utils.are_credentials_valid(authentication):
         sys.exit("ERROR: Authentication error.\nRun 'togglcli setup' to reconfigure the data.")
     
+    # Check if there is already a timer running & give choice if there is
+    if utils.is_timer_running(authentication):
+        print("There is a timer currently running.")
+        user_input = input("Do you want to stop the current timer and start a new one? (y/N): ")
+
+        if user_input != 'y':
+            sys.exit("\nCurrent timer not stoped. You can use 'togglcli current' for more information of the current timer.")
+
     project_id = ""
     if args.project:
         if utils.are_there_projects():
