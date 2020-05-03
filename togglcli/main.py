@@ -50,6 +50,8 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_start.add_argument('-t', '--tags', required=False, dest='tags', default=[],
         nargs='*', help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.'
     )
+    cmd_start.add_argument('-w', '--workspace', required=False, dest='workspace',
+        action='store_true', help='Select workspace to use for timer.')
 
     # togglcli current
     cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
@@ -91,7 +93,7 @@ def command_setup(parser, args) -> None:
     
     # Check if the credentials are valid and then save the defaults to config.json
     if utils.are_credentials_valid(auth):
-        utils.add_defaults_to_config(auth)
+        utils.add_user_data_to_config(auth)
         utils.add_projects_to_config(auth)
     else:
         sys.exit("\nError: Incorrect credentials.")
@@ -126,12 +128,18 @@ def command_start(parser, args) -> None:
             print("WARNING: You don't have any projects in your account.\n"
                 "  If you created one recently, please run 'togglcli setup' to reconfigure your data.\n"
                 "  Timer will be crated without project.\n")
+    
+    if args.workspace:
+        workspace_id = utils.workspace_selection()
+    else:
+        workspace_id = utils.get_default_workspace()
 
     timers.start_timer(
         description=args.description,
         authentication=authentication,
         project_id=project_id,
-        tags=args.tags
+        tags=args.tags,
+        workspace_id=workspace_id
     )
 
 def command_current(parser, args) -> None:

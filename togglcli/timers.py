@@ -12,9 +12,8 @@ with open(config_file_path, 'r') as f:
     config = json.load(f)
 
 def start_timer(description: str, authentication: Tuple[str, str], 
-                project_id: str, tags: List[str]) -> None:
+                project_id: str, tags: List[str], workspace_id: str) -> None:
     url = config['URI']['START']
-    workspace_id = config['DEFAULTS']['WID']
 
     header = {"Content-Type": "application/json",}
     data = {'time_entry': {

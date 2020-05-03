@@ -21,7 +21,7 @@ def are_credentials_valid(authentication: Tuple[str, str]) -> bool:
     
     return False
 
-def add_defaults_to_config(authentication: Tuple[str, str]) -> None:
+def add_user_data_to_config(authentication: Tuple[str, str]) -> None:
     url = config['URI']['USER_INFO']
 
     response = requests.get(url, auth=authentication)
@@ -29,6 +29,13 @@ def add_defaults_to_config(authentication: Tuple[str, str]) -> None:
 
     config['DEFAULTS']['API_KEY'] = data['api_token']
     config['DEFAULTS']['WID'] = str(data['default_wid'])
+
+    # Add WORKSPACES
+    workspaces_dict = dict()
+    for workspace in data['workspaces']:
+        workspaces_dict.update({str(workspace['id']):workspace['name']})
+    
+    config['WORKSPACES'] = workspaces_dict
 
     with open(config_file_path, 'w') as f:
         json.dump(config, f, indent=4)
@@ -98,3 +105,31 @@ def is_timer_running(authentication: Tuple[str, str]) -> bool:
         return False
     
     return True
+
+def workspace_selection() -> str:
+    if len(config['WORKSPACES']) == 1:
+        workspace_id = list(config['WORKSPACES'].keys())[0]
+        print("Only one workspace available in the config file.\nIf you recently "
+            "added a workspace on your account, please use 'togglcli setup' to "
+            "reconfigure your data.\nUsing default workspace.\n")
+        
+        return workspace_id
+    
+    for i, workspace in enumerate(config['WORKSPACES'].items()):
+        print(str(i + 1) + f": {workspace[1]}")
+    
+    selection = input("Please enter the number of the workspace you want to use: ")
+    try:
+        selection = int(selection) - 1
+    except ValueError:
+        sys.exit("\nERROR: Selection entered was not a number.")
+    
+    try:
+        workspace_id = list(config['WORKSPACES'].keys())[selection]
+    except IndexError:
+        sys.exit("\nERROR: Selection not valid. Timer not started.")
+
+    return workspace_id
+
+def get_default_workspace():
+    return config['DEFAULTS']['WID']
