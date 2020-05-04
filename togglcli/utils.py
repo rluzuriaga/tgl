@@ -42,17 +42,19 @@ def add_user_data_to_config(authentication: Tuple[str, str]) -> None:
 
 def add_projects_to_config(authentication: Tuple[str, str]) -> None:
     url_project = config['URI']['PROJECTS_FROM_WID']
-    url_project = url_project.format(config['DEFAULTS']['WID'])
-    
-    response = requests.get(url_project, auth=authentication)
-    project_data = response.json()
 
-    if project_data is not None:
-        projects_dict = dict()
-        for project in project_data:
-            projects_dict.update({str(project['id']): project['name']})
+    for wid in config['WORKSPACES']:
+        url_project_wid = url_project.format(wid)
+    
+        response = requests.get(url_project_wid, auth=authentication)
+        project_data = response.json()
+
+        if project_data is not None:
+            projects_dict = dict({wid: {}})
+            for project in project_data:
+                projects_dict[wid].update({str(project['id']): project['name']})
         
-        config['PROJECTS'] = projects_dict
+            config['PROJECTS'].update(projects_dict)
             
     with open(config_file_path, 'w') as f:
         json.dump(config, f, indent=4)
@@ -65,6 +67,7 @@ def are_defaults_empty() -> bool:
 def delete_user_data() -> None:
     config['DEFAULTS'].clear()
     config['PROJECTS'].clear()
+    config['WORKSPACES'].clear()
 
     with open(config_file_path, 'w') as f:
         json.dump(config, f, indent=4)
@@ -78,8 +81,8 @@ def are_there_projects() -> bool:
         return False
     return True
 
-def project_selection() -> str:
-    for i, project in enumerate(config['PROJECTS'].items()):
+def project_selection(workspace_id: str) -> str:
+    for i, project in enumerate(config['PROJECTS'][workspace_id].items()):
         print(str(i + 1) + f": {project[1]}")
 
     selection = input("Please enter the number of the project you want to use: ")
@@ -89,7 +92,7 @@ def project_selection() -> str:
         sys.exit("\nERROR: Selection entered was not a number.")
 
     try:
-        project_id = list(config['PROJECTS'].keys())[selection]
+        project_id = list(config['PROJECTS'][workspace_id].keys())[selection]
     except IndexError:
         sys.exit("\nERROR: Selection not valid. Timer not started.")
 

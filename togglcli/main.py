@@ -117,29 +117,30 @@ def command_start(parser, args) -> None:
         if user_input != 'y':
             sys.exit("\nCurrent timer not stoped. You can use 'togglcli current' for more information of the current timer.")
 
+    # Workspaces need to be checked first so that the project selection can be accurate
+    if args.workspace:
+        workspace_id = utils.workspace_selection()
+    else:
+        workspace_id = utils.get_default_workspace()
+
     # Check if user adds the project argument then calls a function to check
     # if there are projects in the users account then call the function that asks
     # the user what project to use.
     project_id = ""
     if args.project:
         if utils.are_there_projects():
-            project_id = utils.project_selection()
+            project_id = utils.project_selection(workspace_id)
         else:
             print("WARNING: You don't have any projects in your account.\n"
                 "  If you created one recently, please run 'togglcli setup' to reconfigure your data.\n"
                 "  Timer will be crated without project.\n")
-    
-    if args.workspace:
-        workspace_id = utils.workspace_selection()
-    else:
-        workspace_id = utils.get_default_workspace()
 
     timers.start_timer(
         description=args.description,
         authentication=authentication,
+        workspace_id=workspace_id,
         project_id=project_id,
-        tags=args.tags,
-        workspace_id=workspace_id
+        tags=args.tags
     )
 
 def command_current(parser, args) -> None:
