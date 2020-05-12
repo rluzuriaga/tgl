@@ -38,6 +38,11 @@ def create_parser() -> argparse.ArgumentParser:
         default='', help='Use API key instead of username and password.'
     )
 
+    # togglcli reconfig
+    cmd_reconfig = commands_subparser.add_parser('reconfig',
+        help='Reconfigure data in config.json.')
+    cmd_reconfig.set_defaults(func=command_reconfig)
+
     # togglcli start
     cmd_start = commands_subparser.add_parser('start', help='Start a Toggl timer.')
     cmd_start.set_defaults(func=command_start)
@@ -99,6 +104,19 @@ def command_setup(parser, args) -> None:
         sys.exit("\nError: Incorrect credentials.")
 
     print("\nData saved.")
+
+def command_reconfig(parser, args) -> None:
+    check_if_setup_is_needed()
+
+    auth = utils.auth_from_config()
+
+    utils.delete_user_data()
+
+    if utils.are_credentials_valid(auth):
+        utils.add_user_data_to_config(auth)
+        utils.add_projects_to_config(auth)
+    else:
+        sys.exit("\nError: Incorrect credentials.")
 
 def command_start(parser, args) -> None:
     check_if_setup_is_needed()
