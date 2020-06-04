@@ -1,12 +1,13 @@
 {
     "DEFAULTS": {},
-    "PROJECTS": {}, 
+    "PROJECTS": {},
     "WORKSPACES": {},
+    "PREVIOUS_TIMER": {},
     "URI": {
-        "USER_INFO": "https://www.toggl.com/api/v8/me", 
-        "START": "https://www.toggl.com/api/v8/time_entries/start", 
-        "CURRENT": "https://www.toggl.com/api/v8/time_entries/current", 
-        "STOP": "https://www.toggl.com/api/v8/time_entries/{}/stop", 
+        "USER_INFO": "https://www.toggl.com/api/v8/me",
+        "START": "https://www.toggl.com/api/v8/time_entries/start",
+        "CURRENT": "https://www.toggl.com/api/v8/time_entries/current",
+        "STOP": "https://www.toggl.com/api/v8/time_entries/{}/stop",
         "PROJECTS_FROM_WID": "https://www.toggl.com/api/v8/workspaces/{}/projects"
     }
 }

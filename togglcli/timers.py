@@ -12,7 +12,8 @@ with open(config_file_path, 'r') as f:
     config = json.load(f)
 
 def start_timer(description: str, authentication: Tuple[str, str], 
-                workspace_id: str, project_id: str, tags: List[str]) -> None:
+                workspace_id: str, project_id: str, tags: List[str],
+                billable: bool) -> None:
     url = config['URI']['START']
 
     header = {"Content-Type": "application/json",}
@@ -21,6 +22,7 @@ def start_timer(description: str, authentication: Tuple[str, str],
         'wid': workspace_id, 
         'pid': project_id, 
         'tags': tags,
+        'billable': billable,
         'created_with': 'togglcli'}
     }
 
@@ -33,6 +35,7 @@ def start_timer(description: str, authentication: Tuple[str, str],
 
     if response.status_code == 200:
         print("Timer started.")
+        print(response.json())
     else:
         sys.exit(f"ERROR: Timer not started. Response: {response.status_code}")
 
@@ -68,7 +71,7 @@ def current_timer(authentication: Tuple[str, str]) -> None:
     print(f"    Description:  {timer_description}")
     print(f"    Running time: {running_time}")
 
-def stop_timer(authentication: Tuple[str, str]) -> None:
+def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> None:
     current_url = config['URI']['CURRENT']
     stop_url = config['URI']['STOP']
 
@@ -96,6 +99,47 @@ def stop_timer(authentication: Tuple[str, str]) -> None:
     )
 
     if response.status_code == 200:
-        print(f'Timer "{timer_description}" stoped.')
+        if for_resume:
+            utils.add_previous_timer_to_config(response.json())
+            print(f'Timer "{timer_description}" paused.\nResume using "togglcli resume".')
+        else:
+            utils.remove_previous_timer_from_config()
+            print(f'Timer "{timer_description}" stoped.')
     else:
         sys.exit(f"ERROR: Timer could not be stopped. Response: {response.status_code}")
+
+def resume_timer(authentication: Tuple[str, str]) -> None:
+    if len(config['PREVIOUS_TIMER']) == 0:
+        sys.exit('There is no paused timer. Use "togglecli start" to start a new timer.')
+    
+    url = config['URI']['START']
+
+    header = {"Content-Type": "application/json",}
+
+    description = config['PREVIOUS_TIMER']['description']
+    workspace_id = config['PREVIOUS_TIMER']['wid']
+    project_id = config['PREVIOUS_TIMER']['pid']
+    tags = config['PREVIOUS_TIMER']['tags']
+    billable = config['PREVIOUS_TIMER']['billable']
+
+    data = {'time_entry': {
+        'description': description, 
+        'wid': workspace_id, 
+        'pid': project_id, 
+        'tags': tags,
+        'billable': billable,
+        'created_with': 'togglcli'}
+    }
+
+    response = requests.post(
+        url,
+        headers=header,
+        data=json.dumps(data),
+        auth=authentication
+    )
+
+    if response.status_code == 200:
+        print(f'Timer "{description}" resumed.')
+        utils.remove_previous_timer_from_config()
+    else:
+        sys.exit(f"ERROR: Timer could not be resumed. Response: {response.status_code}")

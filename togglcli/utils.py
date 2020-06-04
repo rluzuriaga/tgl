@@ -59,6 +59,36 @@ def add_projects_to_config(authentication: Tuple[str, str]) -> None:
     with open(config_file_path, 'w') as f:
         json.dump(config, f, indent=4)
 
+def add_previous_timer_to_config(timer_data: dict) -> None:
+    data = timer_data['data']
+
+    config['PREVIOUS_TIMER']['wid'] = str(data['wid'])
+    config['PREVIOUS_TIMER']['description'] = data['description']
+    
+    try:
+        config['PREVIOUS_TIMER']['pid'] = str(data['pid'])
+    except KeyError:
+        config['PREVIOUS_TIMER']['pid'] = ""
+
+    try:
+        config['PREVIOUS_TIMER']['billable'] = data['billable']
+    except KeyError:
+        config['PREVIOUS_TIMER']['billable'] = ""
+
+    try:
+        config['PREVIOUS_TIMER']['tags'] = data['tags']
+    except KeyError:
+        config['PREVIOUS_TIMER']['tags'] = ""
+
+    with open(config_file_path, 'w') as f:
+        json.dump(config, f, indent=4)
+
+def remove_previous_timer_from_config():
+    config['PREVIOUS_TIMER'].clear()
+
+    with open(config_file_path, 'w') as f:
+        json.dump(config, f, indent=4)
+
 def are_defaults_empty() -> bool:
     if len(config['DEFAULTS']) == 0:
         return True

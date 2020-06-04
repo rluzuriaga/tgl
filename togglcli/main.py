@@ -56,7 +56,11 @@ def create_parser() -> argparse.ArgumentParser:
         nargs='*', help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.'
     )
     cmd_start.add_argument('-w', '--workspace', required=False, dest='workspace',
-        action='store_true', help='Select workspace to use for timer.')
+        action='store_true', help='Select workspace to use for timer.'
+    )
+    cmd_start.add_argument('-b', '--billable', required=False, dest='billable',
+        action='store_true', help='Set as billable hours. (For Toggl Pro members only).'
+    )
 
     # togglcli current
     cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
@@ -65,6 +69,14 @@ def create_parser() -> argparse.ArgumentParser:
     # togglcli stop
     cmd_stop = commands_subparser.add_parser('stop', help='Stop current timer.')
     cmd_stop.set_defaults(func=command_stop)
+
+    # togglcli pause
+    cmd_pause = commands_subparser.add_parser('pause', help='Pause the current timer to resume later.')
+    cmd_pause.set_defaults(func=command_pause)
+
+    # togglcli resume
+    cmd_resume = commands_subparser.add_parser('resume', help='Resume a previously paused timer.')
+    cmd_resume.set_defaults(func=command_resume)
 
     return parser
 
@@ -158,7 +170,8 @@ def command_start(parser, args) -> None:
         authentication=authentication,
         workspace_id=workspace_id,
         project_id=project_id,
-        tags=args.tags
+        tags=args.tags,
+        billable=args.billable
     )
 
 def command_current(parser, args) -> None:
@@ -174,6 +187,24 @@ def command_stop(parser, args) -> None:
     authentication = utils.auth_from_config()
 
     timers.stop_timer(authentication)
+
+def command_pause(parser, args) -> None:
+    check_if_setup_is_needed()
+
+    authentication = utils.auth_from_config()
+
+    timers.stop_timer(authentication, for_resume=True)
+
+def command_resume(parser, args) -> None:
+    check_if_setup_is_needed()
+
+    authentication = utils.auth_from_config()
+
+    # Check if there is already a timer running & give choice if there is
+    if utils.is_timer_running(authentication):
+        sys.exit('There is a timer currently running.')
+
+    timers.resume_timer(authentication)
 
 def check_if_setup_is_needed() -> None:
     if utils.are_defaults_empty():
