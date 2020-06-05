@@ -35,7 +35,6 @@ def start_timer(description: str, authentication: Tuple[str, str],
 
     if response.status_code == 200:
         print("Timer started.")
-        print(response.json())
     else:
         sys.exit(f"ERROR: Timer not started. Response: {response.status_code}")
 
