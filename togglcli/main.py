@@ -128,7 +128,7 @@ def command_reconfig(parser, args) -> None:
         utils.add_user_data_to_config(auth)
         utils.add_projects_to_config(auth)
     else:
-        sys.exit("\nError: Incorrect credentials.")
+        sys.exit("\nCredentials error. Please run 'togglcli setup' to reconfigure the credential data.")
 
 def command_start(parser, args) -> None:
     check_if_setup_is_needed()
@@ -145,7 +145,7 @@ def command_start(parser, args) -> None:
         user_input = input("Do you want to stop the current timer and start a new one? (y/N): ")
 
         if user_input != 'y':
-            sys.exit("\nCurrent timer not stoped. You can use 'togglcli current' for more information of the current timer.")
+            sys.exit("\nCurrent timer not stopped. You can use 'togglcli current' for more information of the current timer.")
 
     # Workspaces need to be checked first so that the project selection can be accurate
     if args.workspace:
@@ -162,7 +162,7 @@ def command_start(parser, args) -> None:
             project_id = utils.project_selection(workspace_id)
         else:
             print("WARNING: You don't have any projects in your account.\n"
-                "  If you created one recently, please run 'togglcli setup' to reconfigure your data.\n"
+                "  If you created one recently, please run 'togglcli reconfig' to reconfigure your data.\n"
                 "  Timer will be crated without project.\n")
 
     timers.start_timer(
