@@ -143,7 +143,7 @@ def workspace_selection() -> str:
     if len(config['WORKSPACES']) == 1:
         workspace_id = list(config['WORKSPACES'].keys())[0]
         print("Only one workspace available in the config file.\nIf you recently "
-            "added a workspace on your account, please use 'togglcli setup' to "
+            "added a workspace on your account, please use 'togglcli reconfig' to "
             "reconfigure your data.\nUsing default workspace.\n")
         
         return workspace_id
