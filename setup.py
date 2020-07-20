@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='TogglCLI',
-    version='0.0.1',
+    name='tgl',
+    version='0.0.2',
     zip_safe=False,
     packages=find_packages(),
-    package_data={'togglcli': ['data/*.*']},
+    package_data={'tgl': ['data/*.*']},
     entry_points={
         'console_scripts': [
-            'togglcli = togglcli.main:setuptools_entry',
+            'tgl = tgl.main:setuptools_entry',
         ],
     },
     install_requires = [

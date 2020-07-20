@@ -3,8 +3,8 @@ import json
 import requests
 from typing import Tuple
 
-from togglcli import timers
-from togglcli.defaults import get_default_config_file_path
+from tgl import timers
+from tgl.defaults import get_default_config_file_path
 
 config_file_path = get_default_config_file_path()
 
@@ -143,7 +143,7 @@ def workspace_selection() -> str:
     if len(config['WORKSPACES']) == 1:
         workspace_id = list(config['WORKSPACES'].keys())[0]
         print("Only one workspace available in the config file.\nIf you recently "
-            "added a workspace on your account, please use 'togglcli reconfig' to "
+            "added a workspace on your account, please use 'tgl reconfig' to "
             "reconfigure your data.\nUsing default workspace.\n")
         
         return workspace_id

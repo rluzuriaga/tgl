@@ -3,8 +3,8 @@ import json
 import requests
 from typing import Tuple, List
 
-from togglcli import utils
-from togglcli.defaults import get_default_config_file_path
+from tgl import utils
+from tgl.defaults import get_default_config_file_path
 
 config_file_path = get_default_config_file_path()
 
@@ -23,7 +23,7 @@ def start_timer(description: str, authentication: Tuple[str, str],
         'pid': project_id, 
         'tags': tags,
         'billable': billable,
-        'created_with': 'togglcli'}
+        'created_with': 'tgl'}
     }
 
     response = requests.post(
@@ -100,7 +100,7 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
     if response.status_code == 200:
         if for_resume:
             utils.add_previous_timer_to_config(response.json())
-            print(f'Timer "{timer_description}" paused.\nResume using "togglcli resume".')
+            print(f'Timer "{timer_description}" paused.\nResume using "tgl resume".')
         else:
             utils.remove_previous_timer_from_config()
             print(f'Timer "{timer_description}" stoped.')
@@ -127,7 +127,7 @@ def resume_timer(authentication: Tuple[str, str]) -> None:
         'pid': project_id, 
         'tags': tags,
         'billable': billable,
-        'created_with': 'togglcli'}
+        'created_with': 'tgl'}
     }
 
     response = requests.post(
