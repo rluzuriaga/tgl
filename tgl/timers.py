@@ -103,7 +103,7 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
             print(f'Timer "{timer_description}" paused.\nResume using "tgl resume".')
         else:
             utils.remove_previous_timer_from_config()
-            print(f'Timer "{timer_description}" stoped.')
+            print(f'Timer "{timer_description}" stopped.')
     else:
         sys.exit(f"ERROR: Timer could not be stopped. Response: {response.status_code}")
 

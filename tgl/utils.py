@@ -112,19 +112,27 @@ def are_there_projects() -> bool:
     return True
 
 def project_selection(workspace_id: str) -> str:
+    print("\n0: Don't use any project")
+    print("--------------------------")
     for i, project in enumerate(config['PROJECTS'][workspace_id].items()):
         print(str(i + 1) + f": {project[1]}")
 
-    selection = input("Please enter the number of the project you want to use: ")
+    selection = input("\nPlease enter the number of the project you want to use: ")
     try:
         selection = int(selection) - 1
     except ValueError:
         sys.exit("\nERROR: Selection entered was not a number.")
 
-    try:
-        project_id = list(config['PROJECTS'][workspace_id].keys())[selection]
-    except IndexError:
-        sys.exit("\nERROR: Selection not valid. Timer not started.")
+    # Check if user entered 0 (Don't use any project)
+    # If so, then project_id is ""
+    # Else, try to get the project id from config
+    if selection == -1:
+        project_id = ""
+    else:
+        try:
+            project_id = list(config['PROJECTS'][workspace_id].keys())[selection]
+        except IndexError:
+            sys.exit("\nERROR: Selection not valid. Timer not started.")
 
     return project_id
 
