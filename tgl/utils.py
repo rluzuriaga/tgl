@@ -147,19 +147,21 @@ def is_timer_running(authentication: Tuple[str, str]) -> bool:
     
     return True
 
-def workspace_selection() -> str:
+def workspace_selection(verbose: bool = True) -> str:
     if len(config['WORKSPACES']) == 1:
         workspace_id = list(config['WORKSPACES'].keys())[0]
-        print("Only one workspace available in the config file.\nIf you recently "
-            "added a workspace on your account, please use 'tgl reconfig' to "
-            "reconfigure your data.\nUsing default workspace.\n")
+        if verbose:
+            print("Only one workspace available in the config file.\nIf you recently "
+                "added a workspace on your account, please use 'tgl reconfig' to "
+                "reconfigure your data.\nUsing default workspace.")
         
         return workspace_id
     
+    print()
     for i, workspace in enumerate(config['WORKSPACES'].items()):
         print(str(i + 1) + f": {workspace[1]}")
     
-    selection = input("Please enter the number of the workspace you want to use: ")
+    selection = input("\nPlease enter the number of the workspace you want to use: ")
     try:
         selection = int(selection) - 1
     except ValueError:

@@ -78,6 +78,15 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_resume = commands_subparser.add_parser('resume', help='Resume a previously paused timer.')
     cmd_resume.set_defaults(func=command_resume)
 
+    # tgl create
+    cmd_create = commands_subparser.add_parser('create', help='Create new projects.')
+    cmd_create.set_defaults(func=command_create)
+    cmd_create.add_argument('request',
+        choices=['project'],
+        help='Create a new project.'
+    )
+    cmd_create.add_argument('name', help='Name for the project.')
+
     return parser
 
 def command_setup(parser, args) -> None:
@@ -205,6 +214,21 @@ def command_resume(parser, args) -> None:
         sys.exit('There is a timer currently running.')
 
     timers.resume_timer(authentication)
+
+def command_create(parser, args) -> None:
+    authentication = utils.auth_from_config()
+
+    if args.request == 'project':
+        workspace_id = utils.workspace_selection(verbose=False)
+
+        timers.create_project(
+            authentication=authentication,
+            workspace_id=workspace_id,
+            project_name=args.name
+        )
+
+    # Reconfigure the config file with new changes
+    command_reconfig(parser, args)
 
 def check_if_setup_is_needed() -> None:
     if utils.are_defaults_empty():

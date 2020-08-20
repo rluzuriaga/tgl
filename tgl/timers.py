@@ -142,3 +142,27 @@ def resume_timer(authentication: Tuple[str, str]) -> None:
         utils.remove_previous_timer_from_config()
     else:
         sys.exit(f"ERROR: Timer could not be resumed. Response: {response.status_code}")
+
+def create_project(authentication: Tuple[str, str], workspace_id: str, project_name: str) -> None:
+    url = config['URI']['PROJECTS']
+    header = {"Content-Type": "application/json",}
+
+    data = {'project': {
+        'name': project_name,
+        'wid': workspace_id}
+    }
+
+    response = requests.post(
+        url,
+        headers=header,
+        data=json.dumps(data),
+        auth=authentication
+    )
+
+    workspace_name = config["WORKSPACES"][str(workspace_id)]
+
+    if response.status_code == 200:
+        print(f'\nProject "{project_name}" has been created in the "{workspace_name}" workspace.')
+    else:
+        # Can't strip("\n") when using f-strings so chr(10) is equivalent
+        sys.exit(f'\nERROR: Project could not be created. \nResponse: "{response.text.strip(chr(10))}"')
