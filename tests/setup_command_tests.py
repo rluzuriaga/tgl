@@ -2,9 +2,22 @@ import os
 import unittest
 
 import pexpect
+from dotenv import load_dotenv
+
+from tgl.utils import delete_user_data, are_defaults_empty
+
+load_dotenv()
 
 
 class TestSetupCommand(unittest.TestCase):
+    def setUp(self) -> None:
+        delete_user_data()
+        return super().setUp()
+
+    def tearDown(self) -> None:
+        delete_user_data()
+        return super().tearDown()
+
     def _setup_command(self, email, password) -> str:
         cmd = pexpect.spawn('tgl setup')
 
@@ -36,6 +49,14 @@ class TestSetupCommand(unittest.TestCase):
         output = self._setup_command(os.environ.get('EMAIL'), 'bad_password')
 
         self.assertIn('Error: Incorrect credentials.', output)
+
+    def test_valid_credentials(self) -> None:
+        """ Test the output when entering a valid email and password. """
+        output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
+
+        self.assertIn('Data saved.', output)
+        # TODO: Need to make the assert work by reloading the config file in tgl.utils
+        # self.assertFalse(are_defaults_empty())
 
 
 if __name__ == "__main__":
