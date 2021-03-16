@@ -1,3 +1,4 @@
+import os
 import unittest
 
 import pexpect
@@ -27,6 +28,12 @@ class TestSetupCommand(unittest.TestCase):
     def test_bad_email(self) -> None:
         """ Test the output when the user enters an incorrect email. """
         output = self._setup_command('this_is_a_bad_email@bad_email.com', '\n')
+
+        self.assertIn('Error: Incorrect credentials.', output)
+
+    def test_bad_password(self) -> None:
+        """ Test the output when the user enters an incorrect password. """
+        output = self._setup_command(os.environ.get('EMAIL'), 'bad_password')
 
         self.assertIn('Error: Incorrect credentials.', output)
 
