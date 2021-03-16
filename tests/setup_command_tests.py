@@ -18,6 +18,12 @@ class TestSetupCommand(unittest.TestCase):
 
         return cmd.before.decode('utf-8')
 
+    def test_empty_setup_config(self) -> None:
+        """ Simulate the user pressing enter for both email and password instead of entering the needed data. """
+        output = self._setup_command('\n', '\n')
+
+        self.assertIn('Nothing entered, closing program.', output)
+
 
 if __name__ == "__main__":
     unittest.main()
