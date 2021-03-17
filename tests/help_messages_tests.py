@@ -109,3 +109,7 @@ class TestHelpMessages(unittest.TestCase):
         self.assertRegex(out2, r"\{project\} \s* Create a new project.")
         self.assertRegex(out2, r"name \s* Name for the project.")
         self.assertRegex(out2, self.generic_help_argument_regex)
+
+
+if __name__ == "__main__":
+    unittest.main()
