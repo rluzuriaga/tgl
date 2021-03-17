@@ -76,6 +76,22 @@ class TestSetupCommand(unittest.TestCase):
         # TODO: Need to make the assert work by reloading the config file in tgl.utils
         # self.assertFalse(are_defaults_empty())
 
+    def test_run_setup_second_time_with_empty_reconfig(self) -> None:
+        """ Test running the setup command a second time with and empty email and password.
+        Doing this should result in the original data being deleted from the the json file. 
+        """
+        output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
+        self.assertRegex(output, r'Data saved.')
+
+        cmd = pexpect.spawn('tgl setup')
+        cmd.expect(r'User data is not empty. Do you want to reconfigure it\? \(y/N\)')
+        cmd.sendline('y')
+        self.assertTrue(are_defaults_empty())
+
+        output = self._setup_command('\n', '\n')
+        self.assertIn('Nothing entered, closing program.', output)
+        self.assertTrue(are_defaults_empty())
+
 
 if __name__ == "__main__":
     unittest.main()
