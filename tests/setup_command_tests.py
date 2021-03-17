@@ -1,5 +1,6 @@
 import os
 import unittest
+from signal import SIG_DFL
 
 import pexpect
 from dotenv import load_dotenv
@@ -28,6 +29,7 @@ class TestSetupCommand(unittest.TestCase):
         cmd.sendline(password)
 
         cmd.expect(pexpect.EOF)
+        cmd.kill(SIG_DFL)
         cmd.close()
 
         return cmd.before.decode('utf-8')
@@ -83,6 +85,8 @@ class TestSetupCommand(unittest.TestCase):
         # First setup command with correct email and password
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
         self.assertRegex(output, r'Data saved.')
+        # TODO: Need to make the assert work by reloading the config file in tgl.utils
+        # self.assertFalse(are_defaults_empty())
 
         # Second setup command with `y` reconfigure and empty email and password
         cmd = pexpect.spawn('tgl setup')
@@ -104,6 +108,35 @@ class TestSetupCommand(unittest.TestCase):
 
         self.assertIn('Nothing entered, closing program.', cmd.before.decode('utf-8'))
         self.assertTrue(are_defaults_empty())
+
+    def test_run_setup_second_time_with_credentials(self) -> None:
+        """ Test running the setup command a second time with a different email and password.
+        Doing this should result in the original data being removed and new data going in its place.
+        """
+        # First setup command with correct email and password
+        output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
+        self.assertRegex(output, r'Data saved.')
+        # TODO: Need to make the assert work by reloading the config file in tgl.utils
+        # self.assertFalse(are_defaults_empty())
+
+        # Second setup command with `y` reconfigure and valid credentials
+        cmd = pexpect.spawn('tgl setup')
+        cmd.expect(r'User data is not empty. Do you want to reconfigure it\? \(y/N\)')
+        cmd.sendline('y')
+        self.assertTrue(are_defaults_empty())
+
+        cmd.expect('Please enter your email address:')
+        cmd.sendline(os.environ.get('EMAIL'))
+
+        cmd.expect('Please enter your password:')
+        cmd.sendline(os.environ.get('PASSWORD'))
+
+        cmd.expect(pexpect.EOF)
+        cmd.close()
+
+        self.assertIn('Data saved.', cmd.before.decode('utf-8'))
+        # TODO: Need to make the assert work by reloading the config file in tgl.utils
+        # self.assertFalse(are_defaults_empty())
 
 
 if __name__ == "__main__":
