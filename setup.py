@@ -11,8 +11,10 @@ setup(
             'tgl = tgl.main:setuptools_entry',
         ],
     },
-    install_requires = [
+    install_requires=[
         'requests>=2.23',
+        'pexpect',
+        'python-dotenv'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
