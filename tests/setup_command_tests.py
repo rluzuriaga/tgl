@@ -80,16 +80,29 @@ class TestSetupCommand(unittest.TestCase):
         """ Test running the setup command a second time with and empty email and password.
         Doing this should result in the original data being deleted from the the json file. 
         """
+        # First setup command with correct email and password
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
         self.assertRegex(output, r'Data saved.')
 
+        # Second setup command with `y` reconfigure and empty email and password
         cmd = pexpect.spawn('tgl setup')
         cmd.expect(r'User data is not empty. Do you want to reconfigure it\? \(y/N\)')
         cmd.sendline('y')
+
+        # The data in the json file should be removed right after the `y`
         self.assertTrue(are_defaults_empty())
 
-        output = self._setup_command('\n', '\n')
-        self.assertIn('Nothing entered, closing program.', output)
+        # Entering nothing for email and password
+        cmd.expect('Please enter your email address:')
+        cmd.sendline('\n')
+
+        cmd.expect('Please enter your password:')
+        cmd.sendline('\n')
+
+        cmd.expect(pexpect.EOF)
+        cmd.close()
+
+        self.assertIn('Nothing entered, closing program.', cmd.before.decode('utf-8'))
         self.assertTrue(are_defaults_empty())
 
 
