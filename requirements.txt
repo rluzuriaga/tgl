@@ -1,0 +1,4 @@
+requests
+pexpect
+python-dotenv
+mypy
