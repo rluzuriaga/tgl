@@ -1,31 +1,59 @@
+import os
 import unittest
+import subprocess
 from signal import SIG_DFL
 
 import pexpect
+from dotenv import load_dotenv
 
 from tgl.utils import delete_user_data
+
+load_dotenv()
 
 
 class TestStartCommand(unittest.TestCase):
     def setUp(self) -> None:
         delete_user_data()
+        self._setup_credentials()
         return super().setUp()
 
     def tearDown(self) -> None:
+        subprocess.run(['tgl', 'stop'])
         delete_user_data()
         return super().tearDown()
 
-    def test_empty_start_command(self) -> None:
-        """ Test the output of and empty start command. """
-        cmd = pexpect.spawn('tgl start')
+    @staticmethod
+    def _setup_credentials() -> None:
+        cmd = pexpect.spawn('tgl setup -a')
+
+        cmd.expect("Please enter your API token \(found under 'Profile settings' in the Toggl website\):")
+        cmd.sendline(os.environ.get('API_KEY'))
+
         cmd.expect(pexpect.EOF)
         cmd.kill(SIG_DFL)
         cmd.close()
 
-        output = cmd.before.decode('utf-8')
+    @staticmethod
+    def _run_command(command: str) -> str:
+        cmd = pexpect.spawn(command)
+        cmd.expect(pexpect.EOF)
+        cmd.kill(SIG_DFL)
+        cmd.close()
+
+        return cmd.before.decode('utf-8')
+
+    def test_empty_start_command(self) -> None:
+        """ Test the output of and empty start command. """
+        output = self._run_command('tgl start')
 
         self.assertIn('usage: tgl start [-h] [-p] [-t [TAGS [TAGS ...]]] [-w] [-b] description', output)
         self.assertIn('tgl start: error: the following arguments are required: description', output)
+
+    def test_start_with_one_word_description_without_quotes(self) -> None:
+        """ Test the output of the timer start function with one word description. """
+        output = self._run_command('tgl start description')
+
+        self.assertIn('Timer started.', output)
 
 
 if __name__ == "__main__":
