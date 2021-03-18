@@ -40,6 +40,19 @@ class TestSetupCommand(unittest.TestCase):
 
         self.assertIn('Nothing entered, closing program.', output)
 
+    def test_empty_api_setup_config(self) -> None:
+        """ Test the output when the user doesn't enter anything (presses Enter) for the api. """
+        cmd = pexpect.spawn('tgl setup -a')
+
+        cmd.expect("Please enter your API token \(found under 'Profile settings' in the Toggl website\):")
+        cmd.sendline('\n')
+
+        cmd.expect(pexpect.EOF)
+        cmd.kill(SIG_DFL)
+        cmd.close()
+
+        self.assertIn('Nothing entered, closing program.', cmd.before.decode('utf-8'))
+
     def test_bad_email(self) -> None:
         """ Test the output when the user enters an incorrect email. """
         output = self._setup_command('this_is_a_bad_email@bad_email.com', '\n')
