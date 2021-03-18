@@ -65,11 +65,25 @@ class TestSetupCommand(unittest.TestCase):
 
         self.assertIn('Error: Incorrect credentials.', output)
 
-    def test_valid_credentials(self) -> None:
+    def test_valid_email_and_password_credentials(self) -> None:
         """ Test the output when entering a valid email and password. """
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
 
         self.assertIn('Data saved.', output)
+        # TODO: Need to make the assert work by reloading the config file in tgl.utils
+        # self.assertFalse(are_defaults_empty())
+
+    def test_valid_api_credentials(self) -> None:
+        cmd = pexpect.spawn('tgl setup -a')
+
+        cmd.expect("Please enter your API token \(found under 'Profile settings' in the Toggl website\):")
+        cmd.sendline(os.environ.get('API_KEY'))
+
+        cmd.expect(pexpect.EOF)
+        cmd.kill(SIG_DFL)
+        cmd.close()
+
+        self.assertIn('Data saved.', cmd.before.decode('utf-8'))
         # TODO: Need to make the assert work by reloading the config file in tgl.utils
         # self.assertFalse(are_defaults_empty())
 
