@@ -67,6 +67,13 @@ class TestStartCommand(unittest.TestCase):
 
         self.assertIn('Timer started.', output)
 
+    def test_start_with_multiword_description_without_quotes(self) -> None:
+        """ Test the output of the timer start function with a multiline description not surrounded by quotes. """
+        output = self._run_command('tgl start description two')
+
+        self.assertIn('usage: tgl [-h] <commands> ...', output)
+        self.assertIn('tgl: error: unrecognized arguments: two', output)
+
 
 if __name__ == "__main__":
     unittest.main()
