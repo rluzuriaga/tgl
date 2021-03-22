@@ -61,6 +61,12 @@ class TestStartCommand(unittest.TestCase):
 
         self.assertIn('Timer started.', output)
 
+    def test_start_with_one_word_description_with_quotes(self) -> None:
+        """ Test the output of the timer start function with one word description. """
+        output = self._run_command('tgl start "description"')
+
+        self.assertIn('Timer started.', output)
+
 
 if __name__ == "__main__":
     unittest.main()
