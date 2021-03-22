@@ -68,11 +68,21 @@ class TestStartCommand(unittest.TestCase):
         self.assertIn('Timer started.', output)
 
     def test_start_with_multiword_description_without_quotes(self) -> None:
-        """ Test the output of the timer start function with a multiline description not surrounded by quotes. """
+        """ Test the output of the timer start function with a multiword description not surrounded by quotes. 
+        This command output should result in an error.
+        """
         output = self._run_command('tgl start description two')
 
         self.assertIn('usage: tgl [-h] <commands> ...', output)
         self.assertIn('tgl: error: unrecognized arguments: two', output)
+
+    def test_start_with_multiword_description_with_quotes(self) -> None:
+        """ Test the output of the timer start function with a multiword description in quotes. 
+        This command output should work without any issue.
+        """
+        output = self._run_command('tgl start "multiword description with quotes"')
+
+        self.assertIn('Timer started.', output)
 
 
 if __name__ == "__main__":
