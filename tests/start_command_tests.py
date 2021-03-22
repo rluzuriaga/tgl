@@ -84,6 +84,19 @@ class TestStartCommand(unittest.TestCase):
 
         self.assertIn('Timer started.', output)
 
+    def test_start_with_project_argument_with_no_project_available(self) -> None:
+        """ Test the output of the timer start function with the `-p` argument when there is no project available. 
+
+        This command output should print out a warning to the user about there not being any project in the account 
+            but still start a timer.
+        """
+        output = self._run_command('tgl start -p "This is a test timer"')
+
+        self.assertIn("WARNING: You don't have any projects in your account.", output)
+        self.assertIn("If you created one recently, please run 'tgl reconfig' to reconfigure your data.", output)
+        self.assertIn("Timer will be crated without project.", output)
+        self.assertIn("Timer started.", output)
+
 
 if __name__ == "__main__":
     unittest.main()
