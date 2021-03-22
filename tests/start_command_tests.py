@@ -18,7 +18,9 @@ class TestStartCommand(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        subprocess.run(['tgl', 'stop'])
+        # Stop any timer that was started in the tests
+        subprocess.run(['tgl', 'stop'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         delete_user_data()
         return super().tearDown()
 
@@ -29,7 +31,11 @@ class TestStartCommand(unittest.TestCase):
         cmd.expect("Please enter your API token \(found under 'Profile settings' in the Toggl website\):")
         cmd.sendline(os.environ.get('API_KEY'))
 
-        cmd.expect(pexpect.EOF)
+        # Need to use this wait command instead of `cmd.expect(pexpect.EOF)` since sometimes the expected output
+        #  is delayed because the application isn't disabling the echo quickly enough.
+        # By using cmd.wait(), the function waits until the expected output is pexpect.EOF.
+        cmd.wait()
+
         cmd.kill(SIG_DFL)
         cmd.close()
 
