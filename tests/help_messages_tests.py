@@ -54,7 +54,7 @@ class TestHelpMessages(unittest.TestCase):
 
     def test_start_help_message(self) -> None:
         out1 = run_command("tgl start -h")
-        self.assertIn("usage: tgl start [-h] [-p] [-t [TAGS [TAGS ...]]] [-w] [-b] description", out1)
+        self.assertRegex(out1, "usage: tgl start \[-h\] \[-p\] \[-t \[TAGS \[TAGS ...\]\]\] \[-w\] \[-b\] description")
         self.assertRegex(out1, self.generic_help_argument_regex)
         self.assertRegex(out1, r"description \s* Timer description, use quotes around it unless it is\n\s* one word.")
         self.assertRegex(out1, r"-p, --project \s* Start timer in select project.")
@@ -63,7 +63,7 @@ class TestHelpMessages(unittest.TestCase):
         self.assertRegex(out1, r"-b, --billable \s* Set as billable hours. \(For Toggl Pro members only\).")
 
         out2 = run_command("tgl start --help")
-        self.assertIn("usage: tgl start [-h] [-p] [-t [TAGS [TAGS ...]]] [-w] [-b] description", out2)
+        self.assertRegex(out1, "usage: tgl start \[-h\] \[-p\] \[-t \[TAGS \[TAGS ...\]\]\] \[-w\] \[-b\] description")
         self.assertRegex(out2, self.generic_help_argument_regex)
         self.assertRegex(out2, r"description \s* Timer description, use quotes around it unless it is\n\s* one word.")
         self.assertRegex(out2, r"-p, --project \s* Start timer in select project.")
