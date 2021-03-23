@@ -58,7 +58,7 @@ class TestHelpMessages(unittest.TestCase):
         self.assertRegex(out1, self.generic_help_argument_regex)
         self.assertRegex(out1, r"description \s* Timer description, use quotes around it unless it is\n\s* one word.")
         self.assertRegex(out1, r"-p, --project \s* Start timer in select project.")
-        self.assertRegex(out1, r"-t \[TAGS \[TAGS ...]],\s* --tags .*\s* Space seperated .*\s* multiple .*\s* quotes.")
+        self.assertRegex(out1, r"-t \[TAGS .*\s* --tags .*\s* Space seperated .*\s* multiple .*\s* quotes.")
         self.assertRegex(out1, r"-w, --workspace \s* Select workspace to use for timer.")
         self.assertRegex(out1, r"-b, --billable \s* Set as billable hours. \(For Toggl Pro members only\).")
 
@@ -68,7 +68,7 @@ class TestHelpMessages(unittest.TestCase):
         self.assertRegex(out2, self.generic_help_argument_regex)
         self.assertRegex(out2, r"description \s* Timer description, use quotes around it unless it is\n\s* one word.")
         self.assertRegex(out2, r"-p, --project \s* Start timer in select project.")
-        self.assertRegex(out2, r"-t \[TAGS \[TAGS ...]],\s* --tags .*\s* Space seperated .*\s* multiple .*\s* quotes.")
+        self.assertRegex(out2, r"-t \[TAGS .*\s* --tags .*\s* Space seperated .*\s* multiple .*\s* quotes.")
         self.assertRegex(out2, r"-w, --workspace \s* Select workspace to use for timer.")
         self.assertRegex(out2, r"-b, --billable \s* Set as billable hours. \(For Toggl Pro members only\).")
 
