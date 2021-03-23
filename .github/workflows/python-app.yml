@@ -38,8 +38,18 @@ jobs:
       - name: Install tgl
         run: python setup.py install
       
-      - name: Run tests
-        run: python -m unittest discover -v -s ./tests/ -p "*_tests.py"
+      - name: Run help message tests
+        run: python ./tests/help_messages_tests.py
+      
+      - name: Run setup command tests
+        run: python ./tests/setup_command_tests
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+      
+      - name: Run start command tests
+        run: python ./tests/setup_command_tests
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
