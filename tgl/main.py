@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 from getpass import getpass
@@ -5,9 +6,9 @@ from typing import Tuple
 
 from tgl import utils
 from tgl import timers
-from tgl.defaults import get_default_config_file_path
 
-config_file_path = get_default_config_file_path()
+config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
+
 
 def main(file_name_junk, *argv) -> None:
     parser = create_parser()
@@ -15,52 +16,55 @@ def main(file_name_junk, *argv) -> None:
     if len(argv) <= 0:
         parser.print_help()
         sys.exit()
-    
+
     args = parser.parse_args(argv)
     args.func(parser, args)
+
 
 def setuptools_entry() -> None:
     main(*sys.argv)
 
+
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog='tgl', 
+        prog='tgl',
         description='A command line interface for Toggl.'
     )
 
     commands_subparser = parser.add_subparsers(title='Commands', metavar='<commands>', help='commands')
 
     # tgl setup
-    cmd_setup = commands_subparser.add_parser('setup', 
-        help='Setup the account information for Toggl.')
+    cmd_setup = commands_subparser.add_parser('setup',
+                                              help='Setup the account information for Toggl.')
     cmd_setup.set_defaults(func=command_setup)
     cmd_setup.add_argument('-a', '--api', required=False, dest='api', action='store_true',
-        default='', help='Use API key instead of username and password.'
-    )
+                           default='', help='Use API key instead of username and password.'
+                           )
 
     # tgl reconfig
     cmd_reconfig = commands_subparser.add_parser('reconfig',
-        help='Reconfigure data in config.json.')
+                                                 help='Reconfigure data in config.json.')
     cmd_reconfig.set_defaults(func=command_reconfig)
 
     # tgl start
     cmd_start = commands_subparser.add_parser('start', help='Start a Toggl timer.')
     cmd_start.set_defaults(func=command_start)
-    cmd_start.add_argument('description', 
-        help='Timer description, use quotes around it unless it is one word.'
-    )
+    cmd_start.add_argument('description',
+                           help='Timer description, use quotes around it unless it is one word.'
+                           )
     cmd_start.add_argument('-p', '--project', required=False, dest='project',
-        action='store_true', help='Start timer in select project.'
-    )
-    cmd_start.add_argument('-t', '--tags', required=False, dest='tags', default=[],
-        nargs='*', help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.'
-    )
+                           action='store_true', help='Start timer in select project.'
+                           )
+    cmd_start.add_argument(
+        '-t', '--tags', required=False, dest='tags', default=[],
+        nargs='*',
+        help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.')
     cmd_start.add_argument('-w', '--workspace', required=False, dest='workspace',
-        action='store_true', help='Select workspace to use for timer.'
-    )
+                           action='store_true', help='Select workspace to use for timer.'
+                           )
     cmd_start.add_argument('-b', '--billable', required=False, dest='billable',
-        action='store_true', help='Set as billable hours. (For Toggl Pro members only).'
-    )
+                           action='store_true', help='Set as billable hours. (For Toggl Pro members only).'
+                           )
 
     # tgl current
     cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
@@ -82,12 +86,13 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_create = commands_subparser.add_parser('create', help='Create new projects.')
     cmd_create.set_defaults(func=command_create)
     cmd_create.add_argument('request',
-        choices=['project'],
-        help='Create a new project.'
-    )
+                            choices=['project'],
+                            help='Create a new project.'
+                            )
     cmd_create.add_argument('name', help='Name for the project.')
 
     return parser
+
 
 def command_setup(parser, args) -> None:
     # If the defaults in the config.json file are not empty ask if to reconfigure
@@ -112,11 +117,11 @@ def command_setup(parser, args) -> None:
         password = getpass("Please enter your password: ")
 
         auth = (email, password)
-    
+
     # Program exits if nothing was entered
     if len(auth[0]) == 0:
         sys.exit("\nNothing entered, closing program.")
-    
+
     # Check if the credentials are valid and then save the defaults to config.json
     if utils.are_credentials_valid(auth):
         utils.add_user_data_to_config(auth)
@@ -125,6 +130,7 @@ def command_setup(parser, args) -> None:
         sys.exit("\nError: Incorrect credentials.")
 
     print("\nData saved.")
+
 
 def command_reconfig(parser, args) -> None:
     check_if_setup_is_needed()
@@ -139,6 +145,7 @@ def command_reconfig(parser, args) -> None:
     else:
         sys.exit("\nCredentials error. Please run 'tgl setup' to reconfigure the credential data.")
 
+
 def command_start(parser, args) -> None:
     check_if_setup_is_needed()
 
@@ -147,7 +154,7 @@ def command_start(parser, args) -> None:
     # Check if authentication is correct/api_key wasn't changed
     if not utils.are_credentials_valid(authentication):
         sys.exit("ERROR: Authentication error.\nRun 'tgl setup' to reconfigure the data.")
-    
+
     # Check if there is already a timer running & give choice if there is
     if utils.is_timer_running(authentication):
         print("There is a timer currently running.")
@@ -171,8 +178,8 @@ def command_start(parser, args) -> None:
             project_id = utils.project_selection(workspace_id)
         else:
             print("WARNING: You don't have any projects in your account.\n"
-                "  If you created one recently, please run 'tgl reconfig' to reconfigure your data.\n"
-                "  Timer will be crated without project.\n")
+                  "  If you created one recently, please run 'tgl reconfig' to reconfigure your data.\n"
+                  "  Timer will be crated without project.\n")
 
     timers.start_timer(
         description=args.description,
@@ -183,19 +190,22 @@ def command_start(parser, args) -> None:
         billable=args.billable
     )
 
+
 def command_current(parser, args) -> None:
     check_if_setup_is_needed()
-    
+
     authentication = utils.auth_from_config()
 
     timers.current_timer(authentication)
 
+
 def command_stop(parser, args) -> None:
     check_if_setup_is_needed()
-    
+
     authentication = utils.auth_from_config()
 
     timers.stop_timer(authentication)
+
 
 def command_pause(parser, args) -> None:
     check_if_setup_is_needed()
@@ -203,6 +213,7 @@ def command_pause(parser, args) -> None:
     authentication = utils.auth_from_config()
 
     timers.stop_timer(authentication, for_resume=True)
+
 
 def command_resume(parser, args) -> None:
     check_if_setup_is_needed()
@@ -214,6 +225,7 @@ def command_resume(parser, args) -> None:
         sys.exit('There is a timer currently running.')
 
     timers.resume_timer(authentication)
+
 
 def command_create(parser, args) -> None:
     authentication = utils.auth_from_config()
@@ -230,9 +242,11 @@ def command_create(parser, args) -> None:
     # Reconfigure the config file with new changes
     command_reconfig(parser, args)
 
+
 def check_if_setup_is_needed() -> None:
     if utils.are_defaults_empty():
         sys.exit("Setup is not complete.\nPlease run 'tgl setup' before you can run a timer.")
+
 
 if __name__ == "__main__":
     main(*sys.argv)

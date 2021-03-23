@@ -1,26 +1,27 @@
+import os
 import sys
 import json
 import requests
 from typing import Tuple, List
 
 from tgl import utils
-from tgl.defaults import get_default_config_file_path
 
-config_file_path = get_default_config_file_path()
+config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
 
 with open(config_file_path, 'r') as f:
     config = json.load(f)
 
-def start_timer(description: str, authentication: Tuple[str, str], 
+
+def start_timer(description: str, authentication: Tuple[str, str],
                 workspace_id: str, project_id: str, tags: List[str],
                 billable: bool) -> None:
     url = config['URI']['START']
 
-    header = {"Content-Type": "application/json",}
+    header = {"Content-Type": "application/json", }
     data = {'time_entry': {
-        'description': description, 
-        'wid': workspace_id, 
-        'pid': project_id, 
+        'description': description,
+        'wid': workspace_id,
+        'pid': project_id,
         'tags': tags,
         'billable': billable,
         'created_with': 'tgl'}
@@ -38,10 +39,11 @@ def start_timer(description: str, authentication: Tuple[str, str],
     else:
         sys.exit(f"ERROR: Timer not started. Response: {response.status_code}")
 
+
 def current_timer(authentication: Tuple[str, str]) -> None:
     from datetime import datetime, timezone
     url = config['URI']['CURRENT']
-    
+
     response = requests.get(
         url,
         auth=authentication
@@ -55,12 +57,12 @@ def current_timer(authentication: Tuple[str, str]) -> None:
 
     timer_description = response_json['data']['description']
     start_time = response_json['data']['start']
-    
+
     # Since Python 3.6 is supported, the ':' in the timezone has to be removed from the time
     # This changed in Python 3.7 where %z can accept the ':' in the timezone
     if start_time[-3] == ':':
         start_time = start_time[:-3] + start_time[-2:]
-    
+
     # Calculate how long the timer has been active
     start_time_object = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S%z')
     current_time_object = datetime.utcnow().replace(tzinfo=timezone.utc).replace(microsecond=0)
@@ -70,11 +72,12 @@ def current_timer(authentication: Tuple[str, str]) -> None:
     print(f"    Description:  {timer_description}")
     print(f"    Running time: {running_time}")
 
+
 def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> None:
     current_url = config['URI']['CURRENT']
     stop_url = config['URI']['STOP']
 
-    header = {"Content-Type": "application/json",}
+    header = {"Content-Type": "application/json", }
 
     response = requests.get(
         current_url,
@@ -82,7 +85,7 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
     )
 
     response_json = response.json()
-    
+
     if response_json['data'] is None:
         sys.exit("There is no timer currently running.")
 
@@ -107,13 +110,14 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
     else:
         sys.exit(f"ERROR: Timer could not be stopped. Response: {response.status_code}")
 
+
 def resume_timer(authentication: Tuple[str, str]) -> None:
     if len(config['PREVIOUS_TIMER']) == 0:
         sys.exit('There is no paused timer. Use "togglecli start" to start a new timer.')
-    
+
     url = config['URI']['START']
 
-    header = {"Content-Type": "application/json",}
+    header = {"Content-Type": "application/json", }
 
     description = config['PREVIOUS_TIMER']['description']
     workspace_id = config['PREVIOUS_TIMER']['wid']
@@ -122,9 +126,9 @@ def resume_timer(authentication: Tuple[str, str]) -> None:
     billable = config['PREVIOUS_TIMER']['billable']
 
     data = {'time_entry': {
-        'description': description, 
-        'wid': workspace_id, 
-        'pid': project_id, 
+        'description': description,
+        'wid': workspace_id,
+        'pid': project_id,
         'tags': tags,
         'billable': billable,
         'created_with': 'tgl'}
@@ -143,9 +147,10 @@ def resume_timer(authentication: Tuple[str, str]) -> None:
     else:
         sys.exit(f"ERROR: Timer could not be resumed. Response: {response.status_code}")
 
+
 def create_project(authentication: Tuple[str, str], workspace_id: str, project_name: str) -> None:
     url = config['URI']['PROJECTS']
-    header = {"Content-Type": "application/json",}
+    header = {"Content-Type": "application/json", }
 
     data = {'project': {
         'name': project_name,
