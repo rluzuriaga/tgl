@@ -1,11 +1,11 @@
+import os
 import sys
 import json
-import requests
 from typing import Tuple
 
-from tgl.defaults import get_default_config_file_path
+import requests
 
-config_file_path = get_default_config_file_path()
+config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
 
 with open(config_file_path, 'r') as f:
     config = json.load(f)
