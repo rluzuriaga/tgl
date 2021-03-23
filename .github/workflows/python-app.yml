@@ -42,14 +42,14 @@ jobs:
         run: python ./tests/help_messages_tests.py
       
       - name: Run setup command tests
-        run: python ./tests/setup_command_tests
+        run: python ./tests/setup_command_tests.py
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
           API_KEY: ${{ secrets.API_KEY }}
       
       - name: Run start command tests
-        run: python ./tests/setup_command_tests
+        run: python ./tests/setup_command_tests.py
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
