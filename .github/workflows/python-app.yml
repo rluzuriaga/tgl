@@ -50,3 +50,17 @@ jobs:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
           API_KEY: ${{ secrets.API_KEY }}
+      
+      - name: Run current command tests
+        run: python ./tests/current_command_tests.py
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+      
+      - name: Run stop command tests
+        run: python ./tests/stop_command_tests.py
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
