@@ -20,6 +20,16 @@ class TestCurrentCommand(unittest.TestCase):
         output = run_command('tgl current')
         self.assertIn('There is no timer currently running.', output)
 
+    def test_current_with_timer_running(self) -> None:
+        """ Test the output of the current command with a timer running. """
+        _ = run_command('tgl start "description"')
+
+        output = run_command('tgl current')
+
+        self.assertIn('Current timer:', output)
+        self.assertRegex(output, r'Description:\s*description')
+        self.assertRegex(output, r'Running time:\s*0:00:\d*')
+
 
 if __name__ == "__main__":
     unittest.main()
