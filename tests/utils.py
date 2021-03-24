@@ -3,6 +3,9 @@ import subprocess
 from signal import SIG_DFL
 
 import pexpect
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def tgl_stop() -> None:
