@@ -148,6 +148,31 @@ class TestStartCommand(unittest.TestCase):
         out2 = self._run_command('tgl start "description" --tags "tag 3 with spaces" "tag 4 with spaces"')
         self.assertIn('Timer started.', out2)
 
+    def test_start_with_workspace_argument_with_no_other_workspace_available(self) -> None:
+        """ Test the output of the timer start function with the `-w/--workspace` argument when there is no extra workspace available. 
+
+        This command output should print out a warning to the user about there only being one workspace on the account.
+        """
+        out1 = self._run_command('tgl start "description" -w')
+        self.assertIn("Only one workspace available in the config file.", out1)
+        self.assertIn(
+            "If you recently added a workspace on your account, please use 'tgl reconfig' to reconfigure your data.",
+            out1)
+        self.assertIn("Using default workspace.", out1)
+        self.assertIn("Timer started.", out1)
+
+        tgl_stop()
+
+        out2 = self._run_command('tgl start "description" --workspace')
+        self.assertIn("Only one workspace available in the config file.", out2)
+        self.assertIn(
+            "If you recently added a workspace on your account, please use 'tgl reconfig' to reconfigure your data.",
+            out2)
+        self.assertIn("Using default workspace.", out2)
+        self.assertIn("Timer started.", out2)
+
+    # TODO: Make test for a valid extra workspace
+
 
 if __name__ == "__main__":
     unittest.main()
