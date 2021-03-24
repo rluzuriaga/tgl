@@ -94,12 +94,21 @@ class TestStartCommand(unittest.TestCase):
         This command output should print out a warning to the user about there not being any project in the account 
             but still start a timer.
         """
-        output = self._run_command('tgl start -p "This is a test timer"')
+        out1 = self._run_command('tgl start "This is a test timer" -p')
 
-        self.assertIn("WARNING: You don't have any projects in your account.", output)
-        self.assertIn("If you created one recently, please run 'tgl reconfig' to reconfigure your data.", output)
-        self.assertIn("Timer will be crated without project.", output)
-        self.assertIn("Timer started.", output)
+        self.assertIn("WARNING: You don't have any projects in your account.", out1)
+        self.assertIn("If you created one recently, please run 'tgl reconfig' to reconfigure your data.", out1)
+        self.assertIn("Timer will be crated without project.", out1)
+        self.assertIn("Timer started.", out1)
+
+        tgl_stop()
+
+        out2 = self._run_command('tgl start "This is a test timer" --project')
+
+        self.assertIn("WARNING: You don't have any projects in your account.", out2)
+        self.assertIn("If you created one recently, please run 'tgl reconfig' to reconfigure your data.", out2)
+        self.assertIn("Timer will be crated without project.", out2)
+        self.assertIn("Timer started.", out2)
 
     # TODO: Make test with a valid project
 
