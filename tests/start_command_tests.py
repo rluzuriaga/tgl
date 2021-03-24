@@ -11,6 +11,11 @@ from tgl.utils import delete_user_data
 load_dotenv()
 
 
+def tgl_stop() -> None:
+    """ Stop any timer that is running. """
+    subprocess.run(['tgl', 'stop'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 class TestStartCommand(unittest.TestCase):
     def setUp(self) -> None:
         delete_user_data()
@@ -18,8 +23,7 @@ class TestStartCommand(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        # Stop any timer that was started in the tests
-        subprocess.run(['tgl', 'stop'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        tgl_stop()
 
         delete_user_data()
         return super().tearDown()
@@ -96,6 +100,44 @@ class TestStartCommand(unittest.TestCase):
         self.assertIn("If you created one recently, please run 'tgl reconfig' to reconfigure your data.", output)
         self.assertIn("Timer will be crated without project.", output)
         self.assertIn("Timer started.", output)
+
+    # TODO: Make test with a valid project
+
+    def test_start_with_one_single_word_tag(self) -> None:
+        """ Test that the `tgl start [-t/--tags]` commands works with a single one-word tag. """
+        out1 = self._run_command('tgl start "description" -t tag1')
+        self.assertIn('Timer started.', out1)
+        tgl_stop()
+
+        out2 = self._run_command('tgl start "description" --tags tag2')
+        self.assertIn('Timer started.', out2)
+
+    def test_start_with_one_multiword_tag(self) -> None:
+        """ Test that the `tgl start [-t/--tags]` commands works with a single multiword tag. """
+        out1 = self._run_command('tgl start "description" -t "tag 1 with spaces"')
+        self.assertIn('Timer started.', out1)
+        tgl_stop()
+
+        out2 = self._run_command('tgl start "description" --tags "tag 2 with spaces"')
+        self.assertIn('Timer started.', out2)
+
+    def test_start_with_multiple_one_word_tags(self) -> None:
+        """ Test that the `tgl start [-t/--tags]` commands works with a multiple one-word tags. """
+        out1 = self._run_command('tgl start "description" -t tag3 tag4')
+        self.assertIn('Timer started.', out1)
+        tgl_stop()
+
+        out2 = self._run_command('tgl start "description" --tags tag3 tag4')
+        self.assertIn('Timer started.', out2)
+
+    def test_start_with_multiple_multiword_tags(self) -> None:
+        """ Test that the `tgl start [-t/--tags]` commands works with a multiple multiword tags. """
+        out1 = self._run_command('tgl start "description" -t "tag 3 with spaces" "tag 4 with spaces"')
+        self.assertIn('Timer started.', out1)
+        tgl_stop()
+
+        out2 = self._run_command('tgl start "description" --tags "tag 3 with spaces" "tag 4 with spaces"')
+        self.assertIn('Timer started.', out2)
 
 
 if __name__ == "__main__":
