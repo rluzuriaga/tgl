@@ -20,6 +20,13 @@ class TestStopCommand(unittest.TestCase):
 
         self.assertIn('There is no timer currently running.', output)
 
+    def test_stop_command_with_timer_running(self) -> None:
+        """ Test the output of the stop command with a timer running. """
+        _ = run_command('tgl start "start description"')
+
+        output = run_command('tgl stop')
+        self.assertIn('Timer "start description" stopped.', output)
+
 
 if __name__ == "__main__":
     unittest.main()
