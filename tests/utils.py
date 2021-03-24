@@ -23,3 +23,12 @@ def setup_credentials() -> None:
 
     cmd.kill(SIG_DFL)
     cmd.close()
+
+
+def run_command(command: str) -> str:
+    cmd = pexpect.spawn(command)
+    cmd.expect(pexpect.EOF)
+    cmd.kill(SIG_DFL)
+    cmd.close()
+
+    return cmd.before.decode('utf-8')
