@@ -113,7 +113,7 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
 
 def resume_timer(authentication: Tuple[str, str]) -> None:
     if len(config['PREVIOUS_TIMER']) == 0:
-        sys.exit('There is no paused timer. Use "togglecli start" to start a new timer.')
+        sys.exit('There is no paused timer. Use "tgl start" to start a new timer.')
 
     url = config['URI']['START']
 
