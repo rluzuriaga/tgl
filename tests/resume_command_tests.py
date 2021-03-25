@@ -20,6 +20,15 @@ class TestResumeCommand(unittest.TestCase):
         output = run_command('tgl resume')
         self.assertIn('There is no paused timer. Use "togglecli start" to start a new timer.', output)
 
+    def test_resume_with_paused_timer(self) -> None:
+        """ Test the output of the resume command with a paused timer. """
+        _ = run_command('tgl start "description"')
+
+        _ = run_command('tgl pause')
+
+        output = run_command('tgl resume')
+        self.assertIn('Timer "description" resumed.', output)
+
 
 if __name__ == "__main__":
     unittest.main()
