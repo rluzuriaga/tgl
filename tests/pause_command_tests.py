@@ -20,6 +20,14 @@ class TestPauseCommand(unittest.TestCase):
         output = run_command('tgl pause')
         self.assertIn('There is no timer currently running.', output)
 
+    def test_pause_with_timer_running(self) -> None:
+        """ Test the output of the pause command with a timer running. """
+        _ = run_command('tgl start "description for pause"')
+
+        output = run_command('tgl pause')
+        self.assertIn('Timer "description for pause" paused.', output)
+        self.assertIn('Resume using "tgl resume".', output)
+
 
 if __name__ == "__main__":
     unittest.main()
