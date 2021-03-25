@@ -34,6 +34,11 @@ class TestCommandsWithoutSetup(unittest.TestCase):
         output = run_command('tgl reconfig')
         self.assertIn("Please run 'tgl setup' before you can run a timer.", output)
 
+    def test_create_project_command(self) -> None:
+        """ Test the output of the create project command without the setup being done. """
+        output = run_command('tgl create project project_name')
+        self.assertIn("Please run 'tgl setup' before you can run a timer.", output)
+
 
 if __name__ == "__main__":
     unittest.main()
