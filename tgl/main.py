@@ -34,37 +34,30 @@ def create_parser() -> argparse.ArgumentParser:
     commands_subparser = parser.add_subparsers(title='Commands', metavar='<commands>', help='commands')
 
     # tgl setup
-    cmd_setup = commands_subparser.add_parser('setup',
-                                              help='Setup the account information for Toggl.')
+    cmd_setup = commands_subparser.add_parser('setup', help='Setup the account information for Toggl.')
     cmd_setup.set_defaults(func=command_setup)
     cmd_setup.add_argument('-a', '--api', required=False, dest='api', action='store_true',
-                           default='', help='Use API key instead of username and password.'
-                           )
+                           default='', help='Use API key instead of username and password.')
 
     # tgl reconfig
-    cmd_reconfig = commands_subparser.add_parser('reconfig',
-                                                 help='Reconfigure data in config.json.')
+    cmd_reconfig = commands_subparser.add_parser('reconfig', help='Reconfigure data in config.json.')
     cmd_reconfig.set_defaults(func=command_reconfig)
 
     # tgl start
     cmd_start = commands_subparser.add_parser('start', help='Start a Toggl timer.')
     cmd_start.set_defaults(func=command_start)
-    cmd_start.add_argument('description',
-                           help='Timer description, use quotes around it unless it is one word.'
-                           )
+    cmd_start.add_argument('description', help='Timer description, use quotes around it unless it is one word.')
     cmd_start.add_argument('-p', '--project', required=False, dest='project',
-                           action='store_true', help='Start timer in select project.'
-                           )
+                           action='store_true', help='Start timer in select project.')
     cmd_start.add_argument(
         '-t', '--tags', required=False, dest='tags', default=[],
         nargs='*',
-        help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.')
+        help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.'
+    )
     cmd_start.add_argument('-w', '--workspace', required=False, dest='workspace',
-                           action='store_true', help='Select workspace to use for timer.'
-                           )
+                           action='store_true', help='Select workspace to use for timer.')
     cmd_start.add_argument('-b', '--billable', required=False, dest='billable',
-                           action='store_true', help='Set as billable hours. (For Toggl Pro members only).'
-                           )
+                           action='store_true', help='Set as billable hours. (For Toggl Pro members only).')
 
     # tgl current
     cmd_current = commands_subparser.add_parser('current', help='Get current timer.')
@@ -85,10 +78,7 @@ def create_parser() -> argparse.ArgumentParser:
     # tgl create
     cmd_create = commands_subparser.add_parser('create', help='Create new projects.')
     cmd_create.set_defaults(func=command_create)
-    cmd_create.add_argument('request',
-                            choices=['project'],
-                            help='Create a new project.'
-                            )
+    cmd_create.add_argument('request', choices=['project'], help='Create a new project.')
     cmd_create.add_argument('name', help='Name for the project.')
 
     return parser
@@ -228,6 +218,8 @@ def command_resume(parser, args) -> None:
 
 
 def command_create(parser, args) -> None:
+    check_if_setup_is_needed()
+
     authentication = utils.auth_from_config()
 
     if args.request == 'project':
