@@ -81,6 +81,11 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_create.add_argument('request', choices=['project'], help='Create a new project.')
     cmd_create.add_argument('name', help='Name for the project.')
 
+    # tgl delete
+    cmd_delete = commands_subparser.add_parser('delete', help='Delete projects.')
+    cmd_delete.set_defaults(func=command_delete)
+    cmd_delete.add_argument('request', choices=['project'], help='Delete a project.')
+
     return parser
 
 
@@ -232,6 +237,25 @@ def command_create(parser, args) -> None:
         )
 
     # Reconfigure the config file with new changes
+    command_reconfig(parser, args)
+
+
+def command_delete(parser, args) -> None:
+    check_if_setup_is_needed()
+
+    if not utils.are_there_projects():
+        sys.exit(
+            'There are no projects available in the config file.\nIf you recently '
+            'added a project to your account, please use "tgl reconfig" to reconfigure your data.'
+        )
+
+    authentication = utils.auth_from_config()
+
+    if args.request == 'project':
+        timers.delete_project(
+            authentication=authentication
+        )
+
     command_reconfig(parser, args)
 
 
