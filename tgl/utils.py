@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from typing import Tuple
+from typing import Tuple, Dict
 
 import requests
 
@@ -188,3 +188,26 @@ def workspace_selection(verbose: bool = True) -> str:
 
 def get_default_workspace():
     return config['DEFAULTS']['WID']
+
+
+def get_project_id_from_user_selection() -> str:
+    all_project_dict = config['PROJECTS']
+    selection_dict: Dict[str, str] = {}
+
+    for i, project_dic in enumerate(all_project_dict.items(), start=1):
+        wid: str = project_dic[0]
+        workspace_name = config['WORKSPACES'][wid]
+
+        workspace_output = f"Workspace: {workspace_name}"
+        workspace_output = workspace_output + "\n" + ("-" * len(workspace_output))
+        print(workspace_output)
+
+        for pid, project_name in project_dic[1].items():
+            selection_dict[str(i)] = pid
+            print("    " + str(i) + ": " + project_name)
+
+        print()
+
+    user_selection = input("\nPlease enter the number of the project you want to delete: ")
+
+    return selection_dict[user_selection]
