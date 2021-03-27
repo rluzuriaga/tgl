@@ -171,3 +171,18 @@ def create_project(authentication: Tuple[str, str], workspace_id: str, project_n
     else:
         # Can't strip("\n") when using f-strings so chr(10) is equivalent
         sys.exit(f'\nERROR: Project could not be created. \nResponse: "{response.text.strip(chr(10))}"')
+
+
+def delete_project(authentication: Tuple[str, str]) -> None:
+    deleting_pid = utils.get_project_id_from_user_selection()
+    url = config['URI']['PROJECTS'] + f'/{deleting_pid}'
+
+    response = requests.delete(
+        url=url,
+        auth=authentication
+    )
+
+    if response.status_code == 200:
+        print(f'\nProject was deleted.')
+    else:
+        sys.exit(f'\nERROR: Project could not be deleted.\nResponse: "{response.text}"')
