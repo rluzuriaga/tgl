@@ -1,9 +1,20 @@
 import unittest
 
+from tgl.utils import delete_user_data
 from tests.utils import run_command
 
 
 class TestCommandsWithoutSetup(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        delete_user_data()
+        return super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        delete_user_data()
+        return super().tearDownClass()
+
     def test_start_command(self) -> None:
         """ Test the output of the start command without the setup being done. """
         output = run_command('tgl start "description"')
