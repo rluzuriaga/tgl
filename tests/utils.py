@@ -59,4 +59,6 @@ def delete_project_with_name(project_name: str) -> None:
             cmd.sendline(project_number)
             cmd.close
 
+    cmd.wait()
+
     cmd.kill(SIG_DFL)

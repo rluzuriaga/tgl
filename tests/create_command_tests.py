@@ -11,6 +11,7 @@ class TestCreateCommand(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
+        delete_project_with_name('project name for tests')
         delete_user_data()
         return super().tearDown()
 
@@ -19,7 +20,13 @@ class TestCreateCommand(unittest.TestCase):
         output = run_command('tgl create project "project name for tests"')
         self.assertRegex(output, r'Project "project name for tests" has been created in the ".*" workspace.')
 
-        delete_project_with_name('project name for tests')
+    def test_create_project_that_already_exists(self) -> None:
+        """ Test the output of the create project command with a project name that already exists. """
+        _ = run_command('tgl create project "project name for tests"')
+
+        output = run_command('tgl create project "project name for tests"')
+        self.assertIn('ERROR: Project could not be created.', output)
+        self.assertIn('Response: "Name has already been taken"', output)
 
 
 if __name__ == "__main__":
