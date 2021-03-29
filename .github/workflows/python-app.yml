@@ -38,6 +38,9 @@ jobs:
       - name: Run help message tests
         run: python tests/help_messages_tests.py
       
+      - name: Run all command without setup tests
+        run: python tests/all_commands_without_setup_tests.py
+      
       - name: Run setup command tests
         run: python tests/setup_command_tests.py
         env:
@@ -61,6 +64,34 @@ jobs:
       
       - name: Run stop command tests
         run: python tests/stop_command_tests.py
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Run create command tests
+        run: python tests/create_command_tests.py
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+      
+      - name: Run delete command tests
+        run: python tests/delete_command_tests.py
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+      
+      - name: Run pause command tests
+        run: python tests/pause_command_tests.py
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+      
+      - name: Run resume command tests
+        run: python tests/resume_command_tests.py
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
