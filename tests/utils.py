@@ -35,3 +35,28 @@ def run_command(command: str) -> str:
     cmd.close()
 
     return cmd.before.decode('utf-8')
+
+
+def delete_project_with_name(project_name: str) -> None:
+    cmd = pexpect.spawn('tgl delete project')
+    cpl = cmd.compile_pattern_list([
+        pexpect.EOF,
+        rf'(?:\s*)(\d*)(?::\s*)({project_name})',
+        'Please enter the number of the project you want to delete:'
+    ])
+
+    project_number = ""
+
+    while True:
+        i = cmd.expect_list(cpl, timeout=None)
+
+        if i == 0:
+            break
+        elif i == 1:
+            project_number = cmd.match.group(1).decode('utf-8')
+            cmd.close
+        elif i == 2:
+            cmd.sendline(project_number)
+            cmd.close
+
+    cmd.kill(SIG_DFL)
