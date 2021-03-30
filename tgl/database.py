@@ -86,3 +86,17 @@ class Database:
             '''
         )
         self.connection.commit()
+
+    @setup_and_teardown
+    def is_user_data_saved(self) -> bool:
+        """ Check if user data is saved to the database.
+        The function checks if there is any data in the defaults table since that is te table that
+            will always contain data after the user runs `tgl setup`.
+
+        Returns:
+            bool:   True if user data is saved to the database.
+                    False if user data is not saved to the database.
+        """
+        output = self.cursor.execute('SELECT * FROM defaults;').fetchall()
+
+        return bool(output)
