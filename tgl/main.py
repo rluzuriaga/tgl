@@ -6,6 +6,8 @@ from typing import Tuple
 
 from tgl import utils
 from tgl import timers
+from tgl.database import Database
+from tgl.config import DatabasePath
 
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
 
@@ -90,17 +92,19 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def command_setup(parser, args) -> None:
-    # If the defaults in the config.json file are not empty ask if to reconfigure
-    if not utils.are_defaults_empty():
+    db = Database()
+
+    # If the defaults in the database are not empty ask if to reconfigure the user data
+    if db.is_user_data_saved():
         delete_data_input = input("User data is not empty. Do you want to reconfigure it? (y/N) ")
 
         if delete_data_input.lower() == 'y':
-            utils.delete_user_data()
+            db.delete_user_data()
         else:
             sys.exit("Data was not changed.")
 
-    print("    Configuring your account. Account information will be saved in plain text on")
-    print(f"    a JSON file in {config_file_path}.\n")
+    print("    Configuring your account. Account information will be saved in plain text in")
+    print(f"    the database located in {DatabasePath.get()}.\n")
 
     # Create authentication tuple either from email/password or API key
     if args.api:
@@ -119,8 +123,7 @@ def command_setup(parser, args) -> None:
 
     # Check if the credentials are valid and then save the defaults to config.json
     if utils.are_credentials_valid(auth):
-        utils.add_user_data_to_config(auth)
-        utils.add_projects_to_config(auth)
+        utils.add_user_data_to_database(auth)
     else:
         sys.exit("\nError: Incorrect credentials.")
 

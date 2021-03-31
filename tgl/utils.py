@@ -3,6 +3,8 @@ import sys
 import json
 from typing import Tuple, Dict
 
+from tgl.database import Database
+
 import requests
 
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
@@ -12,7 +14,9 @@ with open(config_file_path, 'r') as f:
 
 
 def are_credentials_valid(authentication: Tuple[str, str]) -> bool:
-    url = config['URI']['USER_INFO']
+    db = Database()
+
+    url = db.get_user_info_url()
 
     response = requests.get(url, auth=authentication)
 
@@ -22,44 +26,49 @@ def are_credentials_valid(authentication: Tuple[str, str]) -> bool:
     return False
 
 
-def add_user_data_to_config(authentication: Tuple[str, str]) -> None:
-    url = config['URI']['USER_INFO']
+def _add_workspaces_to_database(authentication: Tuple[str, str]) -> None:
+    db = Database()
+    url = db.get_user_info_url()
 
     response = requests.get(url, auth=authentication)
     data = response.json()['data']
 
-    config['DEFAULTS']['API_KEY'] = data['api_token']
-    config['DEFAULTS']['WID'] = str(data['default_wid'])
-
-    # Add WORKSPACES
-    workspaces_dict = dict()
     for workspace in data['workspaces']:
-        workspaces_dict.update({str(workspace['id']): workspace['name']})
-
-    config['WORKSPACES'] = workspaces_dict
-
-    with open(config_file_path, 'w') as f:
-        json.dump(config, f, indent=4)
+        db.add_workspaces_data(workspace['id'], workspace['name'])
 
 
-def add_projects_to_config(authentication: Tuple[str, str]) -> None:
-    url_project = config['URI']['PROJECTS_FROM_WID']
+def _add_defaults_to_database(authentication: Tuple[str, str]) -> None:
+    db = Database()
 
-    for wid in config['WORKSPACES']:
+    url = db.get_user_info_url()
+
+    response = requests.get(url, auth=authentication)
+    data = response.json()['data']
+
+    db.add_defaults_data(data['api_token'], data['default_wid'])
+
+
+def _add_projects_to_database(authentication: Tuple[str, str]) -> None:
+    db = Database()
+
+    url_project = db.get_project_from_workspace_id_url()
+
+    for wid in db.get_list_of_workspace_id_from_workspaces():
         url_project_wid = url_project.format(wid)
 
         response = requests.get(url_project_wid, auth=authentication)
         project_data = response.json()
 
         if project_data is not None:
-            projects_dict = dict({wid: {}})
             for project in project_data:
-                projects_dict[wid].update({str(project['id']): project['name']})
+                db.add_projects_data(wid, project['id'], project['name'])
 
-            config['PROJECTS'].update(projects_dict)
 
-    with open(config_file_path, 'w') as f:
-        json.dump(config, f, indent=4)
+def add_user_data_to_database(authentication: Tuple[str, str]) -> None:
+    # These functions need to be ran in this order because of foreign key restraints in the database
+    _add_workspaces_to_database(authentication)
+    _add_defaults_to_database(authentication)
+    _add_projects_to_database(authentication)
 
 
 def add_previous_timer_to_config(timer_data: dict) -> None:
