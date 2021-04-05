@@ -1,11 +1,30 @@
 import os
 import subprocess
+from time import sleep
 from signal import SIG_DFL
 
 import pexpect
 from dotenv import load_dotenv
 
+from tgl.config import DatabasePath
+
 load_dotenv()
+
+
+def remove_db_file() -> None:
+    """ Function to remove a database file if it exists.
+    This function uses the DatabasePath class from `tgl/config.py` to determine what
+    database file to remove.
+    """
+    if os.path.exists(DatabasePath.get()):
+        # Since the tests run faster than what Python can remove the file,
+        #  the function is recursive to wait until the program actually lets
+        #  go of the database before removing it.
+        try:
+            os.remove(DatabasePath.get())
+        except PermissionError:
+            sleep(0.01)
+            remove_db_file()
 
 
 def tgl_stop() -> None:
