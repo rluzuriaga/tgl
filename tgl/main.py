@@ -2,12 +2,12 @@ import os
 import sys
 import argparse
 from getpass import getpass
-from typing import Tuple
 
 from tgl import utils
 from tgl import timers
-from tgl.database import Database
 from tgl.config import DatabasePath
+from tgl.database import Database
+
 
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
 
@@ -33,7 +33,11 @@ def create_parser() -> argparse.ArgumentParser:
         description='A command line interface for Toggl.'
     )
 
-    commands_subparser = parser.add_subparsers(title='Commands', metavar='<commands>', help='commands')
+    parser.add_argument(
+        '-d', required=False, metavar='Database Path', dest='database', nargs=1,
+        help=f'Database file to use. Surround the database path with quotes. (default: {DatabasePath.get()})')
+
+    commands_subparser = parser.add_subparsers(title='tgl commands', metavar='<command>', help='Command description')
 
     # tgl setup
     cmd_setup = commands_subparser.add_parser('setup', help='Setup the account information for Toggl.')
@@ -92,14 +96,16 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def command_setup(parser, args) -> None:
-    db = Database()
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
 
     # If the defaults in the database are not empty ask if to reconfigure the user data
-    if db.is_user_data_saved():
+    if Database().is_user_data_saved():
         delete_data_input = input("User data is not empty. Do you want to reconfigure it? (y/N) ")
 
         if delete_data_input.lower() == 'y':
-            db.delete_user_data()
+            Database().delete_user_data()
         else:
             sys.exit("Data was not changed.")
 
