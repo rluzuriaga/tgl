@@ -151,6 +151,11 @@ class Database:
 
     @setup_and_teardown
     def get_list_of_workspace_id_from_workspaces(self) -> List[int]:
+        """ Get a list of all workspace IDs.
+
+        Returns:
+            List[int]: Workspace id list.
+        """
         out: List[Tuple[int, ...]] = self.cursor.execute(
             '''
             SELECT workspace_id
@@ -161,6 +166,23 @@ class Database:
         output: List[int] = [wid[0] for wid in out]
 
         return output
+
+    @setup_and_teardown
+    def get_user_authentication(self) -> Tuple[str, str]:
+        """ Get the api key from the database and return the needed authentication tuple.
+
+        Returns:
+            Tuple[str, str]: API token tuple.
+        """
+        out = self.cursor.execute(
+            '''
+            SELECT api_key
+            FROM defaults;
+            '''
+        ).fetchall()[0][0]
+
+        auth = (out, 'api_token')
+        return auth
 
     @setup_and_teardown
     def add_workspaces_data(self, workspace_id: int, workspace_name: str) -> None:

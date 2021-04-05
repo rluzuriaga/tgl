@@ -46,7 +46,7 @@ def create_parser() -> argparse.ArgumentParser:
                            default='', help='Use API key instead of username and password.')
 
     # tgl reconfig
-    cmd_reconfig = commands_subparser.add_parser('reconfig', help='Reconfigure data in config.json.')
+    cmd_reconfig = commands_subparser.add_parser('reconfig', help='Reconfigure user data in the database.')
     cmd_reconfig.set_defaults(func=command_reconfig)
 
     # tgl start
@@ -137,15 +137,19 @@ def command_setup(parser, args) -> None:
 
 
 def command_reconfig(parser, args) -> None:
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
+
     check_if_setup_is_needed()
 
-    auth = utils.auth_from_config()
+    auth = Database().get_user_authentication()
 
-    utils.delete_user_data()
+    Database().delete_user_data()
 
     if utils.are_credentials_valid(auth):
-        utils.add_user_data_to_config(auth)
-        utils.add_projects_to_config(auth)
+        utils.add_user_data_to_database(auth)
+        sys.exit("\nData reconfigured.")
     else:
         sys.exit("\nCredentials error. Please run 'tgl setup' to reconfigure the credential data.")
 
@@ -269,7 +273,7 @@ def command_delete(parser, args) -> None:
 
 
 def check_if_setup_is_needed() -> None:
-    if utils.are_defaults_empty():
+    if not Database().is_user_data_saved():
         sys.exit("Setup is not complete.\nPlease run 'tgl setup' before you can run a timer.")
 
 
