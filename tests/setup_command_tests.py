@@ -1,26 +1,36 @@
 import os
 import unittest
+from time import sleep
 from signal import SIG_DFL
 
 import pexpect
 from dotenv import load_dotenv
 
-from tgl.utils import delete_user_data, are_defaults_empty
+from tgl.config import DatabasePath
+from tgl.database import Database
+from tests.utils import remove_db_file
 
 load_dotenv()
 
+DATABASE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'setup_tests_db.sqlite3')
+
 
 class TestSetupCommand(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        DatabasePath.set(DATABASE_PATH)
+        return super().setUpClass()
+
     def setUp(self) -> None:
-        delete_user_data()
+        remove_db_file()
         return super().setUp()
 
     def tearDown(self) -> None:
-        delete_user_data()
+        remove_db_file()
         return super().tearDown()
 
     def _setup_command(self, email, password) -> str:
-        cmd = pexpect.spawn('tgl setup')
+        cmd = pexpect.spawn(f'tgl -d {DATABASE_PATH} setup')
 
         cmd.expect('Please enter your email address:')
         cmd.sendline(email)
@@ -39,10 +49,11 @@ class TestSetupCommand(unittest.TestCase):
         output = self._setup_command('\n', '\n')
 
         self.assertIn('Nothing entered, closing program.', output)
+        self.assertFalse(Database().is_user_data_saved())
 
     def test_empty_api_setup_config(self) -> None:
         """ Test the output when the user doesn't enter anything (presses Enter) for the api. """
-        cmd = pexpect.spawn('tgl setup -a')
+        cmd = pexpect.spawn(f'tgl -d {DATABASE_PATH} setup -a')
 
         cmd.expect("Please enter your API token \(found under 'Profile settings' in the Toggl website\):")
         cmd.sendline('\n')
@@ -52,29 +63,31 @@ class TestSetupCommand(unittest.TestCase):
         cmd.close()
 
         self.assertIn('Nothing entered, closing program.', cmd.before.decode('utf-8'))
+        self.assertFalse(Database().is_user_data_saved())
 
     def test_bad_email(self) -> None:
         """ Test the output when the user enters an incorrect email. """
         output = self._setup_command('this_is_a_bad_email@bad_email.com', '\n')
 
         self.assertIn('Error: Incorrect credentials.', output)
+        self.assertFalse(Database().is_user_data_saved())
 
     def test_bad_password(self) -> None:
         """ Test the output when the user enters an incorrect password. """
         output = self._setup_command(os.environ.get('EMAIL'), 'bad_password')
 
         self.assertIn('Error: Incorrect credentials.', output)
+        self.assertFalse(Database().is_user_data_saved())
 
     def test_valid_email_and_password_credentials(self) -> None:
         """ Test the output when entering a valid email and password. """
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
 
         self.assertIn('Data saved.', output)
-        # TODO: Need to make the assert work by reloading the config file in tgl.utils
-        # self.assertFalse(are_defaults_empty())
+        self.assertTrue(Database().is_user_data_saved())
 
     def test_valid_api_credentials(self) -> None:
-        cmd = pexpect.spawn('tgl setup -a')
+        cmd = pexpect.spawn(f'tgl -d {DATABASE_PATH} setup -a')
 
         cmd.expect("Please enter your API token \(found under 'Profile settings' in the Toggl website\):")
         cmd.sendline(os.environ.get('API_KEY'))
@@ -84,16 +97,16 @@ class TestSetupCommand(unittest.TestCase):
         cmd.close()
 
         self.assertIn('Data saved.', cmd.before.decode('utf-8'))
-        # TODO: Need to make the assert work by reloading the config file in tgl.utils
-        # self.assertFalse(are_defaults_empty())
+        self.assertTrue(Database().is_user_data_saved())
 
     def test_run_setup_second_time_without_reconfig(self) -> None:
         """ Test the setup command after data is already saved and make sure that the data is not overwritten. """
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
 
         self.assertRegex(output, r'Data saved.')
+        self.assertTrue(Database().is_user_data_saved())
 
-        cmd = pexpect.spawn('tgl setup')
+        cmd = pexpect.spawn(f'tgl -d {DATABASE_PATH} setup')
 
         cmd.expect(r'User data is not empty. Do you want to reconfigure it\? \(y/N\)')
         cmd.sendline('N')
@@ -102,8 +115,7 @@ class TestSetupCommand(unittest.TestCase):
         cmd.close()
 
         self.assertIn('Data was not changed.', cmd.before.decode('utf-8'))
-        # TODO: Need to make the assert work by reloading the config file in tgl.utils
-        # self.assertFalse(are_defaults_empty())
+        self.assertTrue(Database().is_user_data_saved())
 
     def test_run_setup_second_time_with_empty_reconfig(self) -> None:
         """ Test running the setup command a second time with and empty email and password.
@@ -112,16 +124,17 @@ class TestSetupCommand(unittest.TestCase):
         # First setup command with correct email and password
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
         self.assertRegex(output, r'Data saved.')
-        # TODO: Need to make the assert work by reloading the config file in tgl.utils
-        # self.assertFalse(are_defaults_empty())
+        self.assertTrue(Database().is_user_data_saved())
 
         # Second setup command with `y` reconfigure and empty email and password
-        cmd = pexpect.spawn('tgl setup')
+        cmd = pexpect.spawn(f'tgl -d {DATABASE_PATH} setup')
         cmd.expect(r'User data is not empty. Do you want to reconfigure it\? \(y/N\)')
         cmd.sendline('y')
 
-        # The data in the json file should be removed right after the `y`
-        self.assertTrue(are_defaults_empty())
+        # The user data in the database should be removed right after the user enters `y`
+        # Need to wait a tiny bit for the data to be removed from the database before checking it.
+        sleep(0.001)
+        self.assertFalse(Database().is_user_data_saved())
 
         # Entering nothing for email and password
         cmd.expect('Please enter your email address:')
@@ -134,7 +147,7 @@ class TestSetupCommand(unittest.TestCase):
         cmd.close()
 
         self.assertIn('Nothing entered, closing program.', cmd.before.decode('utf-8'))
-        self.assertTrue(are_defaults_empty())
+        self.assertFalse(Database().is_user_data_saved())
 
     def test_run_setup_second_time_with_credentials(self) -> None:
         """ Test running the setup command a second time with a different email and password.
@@ -143,14 +156,17 @@ class TestSetupCommand(unittest.TestCase):
         # First setup command with correct email and password
         output = self._setup_command(os.environ.get('EMAIL'), os.environ.get('PASSWORD'))
         self.assertRegex(output, r'Data saved.')
-        # TODO: Need to make the assert work by reloading the config file in tgl.utils
-        # self.assertFalse(are_defaults_empty())
+        self.assertTrue(Database().is_user_data_saved())
 
         # Second setup command with `y` reconfigure and valid credentials
-        cmd = pexpect.spawn('tgl setup')
+        cmd = pexpect.spawn(f'tgl -d {DATABASE_PATH} setup')
         cmd.expect(r'User data is not empty. Do you want to reconfigure it\? \(y/N\)')
         cmd.sendline('y')
-        self.assertTrue(are_defaults_empty())
+
+        # The user data in the database should be removed right after the user enters `y`
+        # Need to wait a tiny bit for the data to be removed from the database before checking it.
+        sleep(0.001)
+        self.assertFalse(Database().is_user_data_saved())
 
         cmd.expect('Please enter your email address:')
         cmd.sendline(os.environ.get('EMAIL'))
@@ -162,8 +178,7 @@ class TestSetupCommand(unittest.TestCase):
         cmd.close()
 
         self.assertIn('Data saved.', cmd.before.decode('utf-8'))
-        # TODO: Need to make the assert work by reloading the config file in tgl.utils
-        # self.assertFalse(are_defaults_empty())
+        self.assertTrue(Database().is_user_data_saved())
 
 
 if __name__ == "__main__":
