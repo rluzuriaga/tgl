@@ -40,7 +40,7 @@ def create_parser() -> argparse.ArgumentParser:
     commands_subparser = parser.add_subparsers(title='tgl commands', metavar='<command>', help='Command description')
 
     # tgl setup
-    cmd_setup = commands_subparser.add_parser('setup', help='Setup the account information for Toggl.')
+    cmd_setup = commands_subparser.add_parser('setup', help='Configure the database with Toggl user data.')
     cmd_setup.set_defaults(func=command_setup)
     cmd_setup.add_argument('-a', '--api', required=False, dest='api', action='store_true',
                            default='', help='Use API key instead of username and password.')
