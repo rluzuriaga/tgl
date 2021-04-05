@@ -14,9 +14,7 @@ with open(config_file_path, 'r') as f:
 
 
 def are_credentials_valid(authentication: Tuple[str, str]) -> bool:
-    db = Database()
-
-    url = db.get_user_info_url()
+    url = Database().get_user_info_url()
 
     response = requests.get(url, auth=authentication)
 
@@ -27,33 +25,28 @@ def are_credentials_valid(authentication: Tuple[str, str]) -> bool:
 
 
 def _add_workspaces_to_database(authentication: Tuple[str, str]) -> None:
-    db = Database()
-    url = db.get_user_info_url()
+    url = Database().get_user_info_url()
 
     response = requests.get(url, auth=authentication)
     data = response.json()['data']
 
     for workspace in data['workspaces']:
-        db.add_workspaces_data(workspace['id'], workspace['name'])
+        Database().add_workspaces_data(workspace['id'], workspace['name'])
 
 
 def _add_defaults_to_database(authentication: Tuple[str, str]) -> None:
-    db = Database()
-
-    url = db.get_user_info_url()
+    url = Database().get_user_info_url()
 
     response = requests.get(url, auth=authentication)
     data = response.json()['data']
 
-    db.add_defaults_data(data['api_token'], data['default_wid'])
+    Database().add_defaults_data(data['api_token'], data['default_wid'])
 
 
 def _add_projects_to_database(authentication: Tuple[str, str]) -> None:
-    db = Database()
+    url_project = Database().get_project_from_workspace_id_url()
 
-    url_project = db.get_project_from_workspace_id_url()
-
-    for wid in db.get_list_of_workspace_id_from_workspaces():
+    for wid in Database().get_list_of_workspace_id_from_workspaces():
         url_project_wid = url_project.format(wid)
 
         response = requests.get(url_project_wid, auth=authentication)
@@ -61,7 +54,7 @@ def _add_projects_to_database(authentication: Tuple[str, str]) -> None:
 
         if project_data is not None:
             for project in project_data:
-                db.add_projects_data(wid, project['id'], project['name'])
+                Database().add_projects_data(wid, project['id'], project['name'])
 
 
 def add_user_data_to_database(authentication: Tuple[str, str]) -> None:
