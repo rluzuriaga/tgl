@@ -7,16 +7,14 @@ from tgl.config import DatabasePath
 
 
 class Database:
-    def __init__(self, database_path: str = DatabasePath.get()) -> None:
-        self.db_path: str = database_path
-
+    def __init__(self) -> None:
         # Check if the database is already created
         # If it isn't then run the function to create it
-        if not os.path.exists(self.db_path):
+        if not os.path.exists(DatabasePath.get()):
             self._create_db()
 
     def _setup(self) -> None:
-        self.connection = sqlite3.connect(self.db_path)
+        self.connection = sqlite3.connect(DatabasePath.get())
         self.cursor = self.connection.cursor()
 
     def _teardown(self) -> None:
