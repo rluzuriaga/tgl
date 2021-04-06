@@ -204,9 +204,12 @@ def command_start(parser, args) -> None:
 
 
 def command_current(parser, args) -> None:
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
     check_if_setup_is_needed()
 
-    authentication = utils.auth_from_config()
+    authentication = Database().get_user_authentication()
 
     timers.current_timer(authentication)
 
