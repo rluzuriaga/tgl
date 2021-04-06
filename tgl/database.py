@@ -179,6 +179,23 @@ class Database:
         return output
 
     @setup_and_teardown
+    def get_stop_timer_url(self) -> str:
+        """ Get the api url to stop a timer.
+
+        Returns:
+            str: URL
+        """
+        output = self.cursor.execute(
+            '''
+            SELECT url
+            FROM api_url
+            WHERE name="stop";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
     def get_project_from_workspace_id_url(self) -> str:
         """ Get the api url that is used retrieve the projects for a specific workspace.
 
