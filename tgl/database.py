@@ -48,13 +48,13 @@ class Database:
             );
 
             CREATE TABLE IF NOT EXISTS workspaces (
-                workspace_id INTEGER PRIMARY KEY,
+                workspace_id TEXT PRIMARY KEY,
                 workspace_name TEXT NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS defaults (
                 api_key TEXT NOT NULL,
-                workspace_id INTEGER NOT NULL,
+                workspace_id TEXT NOT NULL,
 
                 FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
                     ON UPDATE CASCADE
@@ -62,7 +62,7 @@ class Database:
             );
 
             CREATE TABLE IF NOT EXISTS projects (
-                workspace_id INTEGER NOT NULL,
+                workspace_id TEXT NOT NULL,
                 project_id INTEGER NOT NULL,
                 project_name TEXT NOT NULL,
 
@@ -150,20 +150,20 @@ class Database:
         return output
 
     @setup_and_teardown
-    def get_list_of_workspace_id_from_workspaces(self) -> List[int]:
+    def get_list_of_workspace_ids(self) -> List[str]:
         """ Get a list of all workspace IDs.
 
         Returns:
             List[int]: Workspace id list.
         """
-        out: List[Tuple[int, ...]] = self.cursor.execute(
+        out: List[Tuple[str, ...]] = self.cursor.execute(
             '''
             SELECT workspace_id
             FROM workspaces;
             '''
         ).fetchall()
 
-        output: List[int] = [wid[0] for wid in out]
+        output: List[str] = [wid[0] for wid in out]
 
         return output
 
@@ -185,11 +185,11 @@ class Database:
         return auth
 
     @setup_and_teardown
-    def add_workspaces_data(self, workspace_id: int, workspace_name: str) -> None:
+    def add_workspaces_data(self, workspace_id: str, workspace_name: str) -> None:
         self.cursor.execute(
             f'''
             INSERT INTO workspaces (workspace_id, workspace_name)
-            VALUES ({workspace_id}, "{workspace_name}");
+            VALUES ("{workspace_id}", "{workspace_name}");
             '''
         )
         self.connection.commit()
@@ -205,11 +205,11 @@ class Database:
         self.connection.commit()
 
     @setup_and_teardown
-    def add_projects_data(self, workspace_id: int, project_id: int, project_name: str) -> None:
+    def add_projects_data(self, workspace_id: str, project_id: str, project_name: str) -> None:
         self.cursor.execute(
             f'''
             INSERT INTO projects (workspace_id, project_id, project_name)
-            VALUES ({workspace_id}, {project_id}, "{project_name}");
+            VALUES ("{workspace_id}", "{project_id}", "{project_name}");
             '''
         )
         self.connection.commit()
