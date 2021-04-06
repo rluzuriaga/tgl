@@ -145,6 +145,23 @@ class Database:
         return output
 
     @setup_and_teardown
+    def get_start_timer_url(self) -> str:
+        """ Get the api url to start a timer.
+
+        Returns:
+            str: URL
+        """
+        output = self.cursor.execute(
+            '''
+            SELECT url
+            FROM api_url
+            WHERE name="start";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
     def get_current_timer_url(self) -> str:
         """ Get the api url for checking current timers that are running.
 
