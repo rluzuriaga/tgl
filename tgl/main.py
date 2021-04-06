@@ -54,11 +54,11 @@ def create_parser() -> argparse.ArgumentParser:
     cmd_start.set_defaults(func=command_start)
     cmd_start.add_argument('description', help='Timer description, use quotes around it unless it is one word.')
     cmd_start.add_argument('-p', '--project', required=False, dest='project',
-                           action='store_true', help='Start timer in select project.')
+                           action='store_true', help='Start timer in selected project.')
     cmd_start.add_argument(
         '-t', '--tags', required=False, dest='tags', default=[],
         nargs='*',
-        help='Space seperated keywords that get saved as tags. If multiple words need to be used the surround them in quotes.'
+        help='Space seperated keywords that get saved as tags. If the tag is multiple words surround them in quotes.'
     )
     cmd_start.add_argument('-w', '--workspace', required=False, dest='workspace',
                            action='store_true', help='Select workspace to use for timer.')
@@ -155,34 +155,38 @@ def command_reconfig(parser, args) -> None:
 
 
 def command_start(parser, args) -> None:
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
+
     check_if_setup_is_needed()
 
-    authentication = utils.auth_from_config()
+    authentication = Database().get_user_authentication()
 
     # Check if authentication is correct/api_key wasn't changed
     if not utils.are_credentials_valid(authentication):
-        sys.exit("ERROR: Authentication error.\nRun 'tgl setup' to reconfigure the data.")
+        sys.exit("ERROR: Authentication error.\nRun 'tgl setup' to fully reconfigure the data.")
 
     # Check if there is already a timer running & give choice if there is
     if utils.is_timer_running(authentication):
         print("There is a timer currently running.")
         user_input = input("Do you want to stop the current timer and start a new one? (y/N): ")
 
-        if user_input != 'y':
+        if user_input.lower() != 'y':
             sys.exit("\nCurrent timer not stopped. You can use 'tgl current' for more information of the current timer.")
 
     # Workspaces need to be checked first so that the project selection can be accurate
     if args.workspace:
-        workspace_id = utils.workspace_selection()
+        workspace_id: str = utils.workspace_selection()
     else:
-        workspace_id = utils.get_default_workspace()
+        workspace_id = Database().get_default_workspace_id()
 
     # Check if user adds the project argument then calls a function to check
     # if there are projects in the users account then call the function that asks
     # the user what project to use.
     project_id = ""
     if args.project:
-        if utils.are_there_projects():
+        if Database().are_there_projects():
             project_id = utils.project_selection(workspace_id)
         else:
             print("WARNING: You don't have any projects in your account.\n"
