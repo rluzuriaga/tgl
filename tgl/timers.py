@@ -75,8 +75,8 @@ def current_timer(authentication: Tuple[str, str]) -> None:
 
 
 def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> None:
-    current_url = config['URI']['CURRENT']
-    stop_url = config['URI']['STOP']
+    current_url = Database().get_current_timer_url()
+    stop_url = Database().get_stop_timer_url()
 
     header = {"Content-Type": "application/json", }
 
