@@ -5,6 +5,7 @@ import requests
 from typing import Tuple, List
 
 from tgl import utils
+from tgl.database import Database
 
 config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'config.json')
 
@@ -15,7 +16,7 @@ with open(config_file_path, 'r') as f:
 def start_timer(description: str, authentication: Tuple[str, str],
                 workspace_id: str, project_id: str, tags: List[str],
                 billable: bool) -> None:
-    url = config['URI']['START']
+    url = Database().get_start_timer_url()
 
     header = {"Content-Type": "application/json", }
     data = {'time_entry': {
@@ -42,7 +43,7 @@ def start_timer(description: str, authentication: Tuple[str, str],
 
 def current_timer(authentication: Tuple[str, str]) -> None:
     from datetime import datetime, timezone
-    url = config['URI']['CURRENT']
+    url = Database().get_current_timer_url()
 
     response = requests.get(
         url,
