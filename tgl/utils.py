@@ -46,7 +46,7 @@ def _add_defaults_to_database(authentication: Tuple[str, str]) -> None:
 def _add_projects_to_database(authentication: Tuple[str, str]) -> None:
     url_project = Database().get_project_from_workspace_id_url()
 
-    for wid in Database().get_list_of_workspace_id_from_workspaces():
+    for wid in Database().get_list_of_workspace_ids():
         url_project_wid = url_project.format(wid)
 
         response = requests.get(url_project_wid, auth=authentication)
@@ -54,7 +54,7 @@ def _add_projects_to_database(authentication: Tuple[str, str]) -> None:
 
         if project_data is not None:
             for project in project_data:
-                Database().add_projects_data(wid, project['id'], project['name'])
+                Database().add_projects_data(str(wid), str(project['id']), project['name'])
 
 
 def add_user_data_to_database(authentication: Tuple[str, str]) -> None:
@@ -125,23 +125,26 @@ def are_there_projects() -> bool:
 def project_selection(workspace_id: str) -> str:
     print("\n0: Don't use any project")
     print("--------------------------")
-    for i, project in enumerate(config['PROJECTS'][workspace_id].items()):
-        print(str(i + 1) + f": {project[1]}")
+
+    project_dict = {}
+    for i, project in enumerate(Database().get_list_of_project_names_from_workspace(workspace_id), start=1):
+        print(str(i) + f": {project}")
+        project_dict[i] = project
 
     selection = input("\nPlease enter the number of the project you want to use: ")
     try:
-        selection = int(selection) - 1
+        selection_int = int(selection)
     except ValueError:
-        sys.exit("\nERROR: Selection entered was not a number.")
+        sys.exit("\nERROR: Selection entered was not a valid number.")
 
     # Check if user entered 0 (Don't use any project)
     # If so, then project_id is ""
     # Else, try to get the project id from config
-    if selection == -1:
+    if selection_int == 0:
         project_id = ""
     else:
         try:
-            project_id = list(config['PROJECTS'][workspace_id].keys())[selection]
+            project_id = Database().get_project_id_from_project_name(project_dict[selection_int])
         except IndexError:
             sys.exit("\nERROR: Selection not valid. Timer not started.")
 
@@ -149,7 +152,7 @@ def project_selection(workspace_id: str) -> str:
 
 
 def is_timer_running(authentication: Tuple[str, str]) -> bool:
-    url = config['URI']['CURRENT']
+    url = Database().get_current_timer_url()
 
     response = requests.get(url, auth=authentication)
     response_json = response.json()
@@ -161,8 +164,11 @@ def is_timer_running(authentication: Tuple[str, str]) -> bool:
 
 
 def workspace_selection(verbose: bool = True) -> str:
-    if len(config['WORKSPACES']) == 1:
-        workspace_id = list(config['WORKSPACES'].keys())[0]
+    # Check if there is only one workspace
+    # If there is only one workspace then a message is given to the user
+    #  and the default workspace id is returned
+    if len(Database().get_list_of_workspace_ids()) == 1:
+        workspace_id: str = Database().get_default_workspace_id()
         if verbose:
             print("Only one workspace available in the config file.\nIf you recently "
                   "added a workspace on your account, please use 'tgl reconfig' to "
@@ -171,17 +177,21 @@ def workspace_selection(verbose: bool = True) -> str:
         return workspace_id
 
     print()
-    for i, workspace in enumerate(config['WORKSPACES'].items()):
-        print(str(i + 1) + f": {workspace[1]}")
+    workspace_dict = {}
+    for i, workspace in enumerate(Database().get_list_of_workspace_names(), start=1):
+        print(str(i) + f": {workspace}")
+        workspace_dict[i] = workspace
 
     selection = input("\nPlease enter the number of the workspace you want to use: ")
     try:
-        selection = int(selection) - 1
+        selection_int = int(selection)
     except ValueError:
-        sys.exit("\nERROR: Selection entered was not a number.")
+        sys.exit("\nERROR: Selection entered was not a valid number.")
 
     try:
-        workspace_id = list(config['WORKSPACES'].keys())[selection]
+        workspace_id = Database().get_workspace_id_from_workspace_name(
+            workspace_dict[selection_int]
+        )
     except IndexError:
         sys.exit("\nERROR: Selection not valid. Timer not started.")
 
