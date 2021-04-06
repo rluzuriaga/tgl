@@ -102,6 +102,18 @@ class Database:
         return bool(output)
 
     @setup_and_teardown
+    def are_there_projects(self) -> bool:
+        """ Check if there are any projects saved to the database.
+
+        Returns:
+            bool:   True if there are projects
+                    False if there are NO projects
+        """
+        output = self.cursor.execute('SELECT * FROM projects').fetchall()
+
+        return bool(output)
+
+    @setup_and_teardown
     def delete_user_data(self) -> None:
         """ Delete all user data from the database like if the database had just been initialized. """
         # Check how to create a savepoint in case it should be rolledback
@@ -127,6 +139,23 @@ class Database:
             SELECT url
             FROM api_url
             WHERE name="user_info";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
+    def get_current_timer_url(self) -> str:
+        """ Get the api url for checking current timers that are running.
+
+        Returns:
+            str: URL
+        """
+        output = self.cursor.execute(
+            '''
+            SELECT url
+            FROM api_url
+            WHERE name="current";
             '''
         ).fetchall()[0][0]
 
@@ -168,6 +197,44 @@ class Database:
         return output
 
     @setup_and_teardown
+    def get_list_of_workspace_names(self) -> List[str]:
+        """ Get a list of all workspace names.
+
+        Returns:
+            List[str]: Workspace name list.
+        """
+        out: List[Tuple[str, ...]] = self.cursor.execute(
+            '''
+            SELECT workspace_name
+            FROM workspaces;
+            '''
+        ).fetchall()
+
+        output: List[str] = [workspace_name[0] for workspace_name in out]
+
+        return output
+
+    @setup_and_teardown
+    def get_workspace_id_from_workspace_name(self, workspace_name: str) -> str:
+        """ Get the workspace id from the workspace name.
+
+        Args:
+            workspace_name (str): Workspace name to search on the workspaces table.
+
+        Returns:
+            str: Workspace ID.
+        """
+        output: str = self.cursor.execute(
+            f'''
+            SELECT workspace_id
+            FROM workspaces
+            WHERE workspace_name="{workspace_name}";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
     def get_user_authentication(self) -> Tuple[str, str]:
         """ Get the api key from the database and return the needed authentication tuple.
 
@@ -183,6 +250,48 @@ class Database:
 
         auth = (out, 'api_token')
         return auth
+
+    @setup_and_teardown
+    def get_default_workspace_id(self) -> str:
+        output: str = self.cursor.execute(
+            'SELECT workspace_id FROM defaults;'
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
+    def get_list_of_project_names_from_workspace(self, workspace_id: str) -> List:
+        out: List[Tuple[str, ...]] = self.cursor.execute(
+            f'''
+            SELECT project_name
+            FROM projects
+            WHERE workspace_id="{workspace_id}";
+            '''
+        ).fetchall()
+
+        output: List[str] = [project_name[0] for project_name in out]
+
+        return output
+
+    @setup_and_teardown
+    def get_project_id_from_project_name(self, project_name: str) -> str:
+        """ Get the project ID from the given project name
+
+        Args:
+            project_name (str): User selected project name.
+
+        Returns:
+            str: Project ID.
+        """
+        output: str = self.cursor.execute(
+            f'''
+            SELECT project_id
+            FROM projects
+            WHERE project_name="{project_name}";
+            '''
+        ).fetchall()[0][0]
+
+        return output
 
     @setup_and_teardown
     def add_workspaces_data(self, workspace_id: str, workspace_name: str) -> None:
