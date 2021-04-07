@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from functools import wraps
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Tuple, Optional
 
 from tgl.config import DatabasePath
 
@@ -65,6 +65,20 @@ class Database:
                 workspace_id TEXT NOT NULL,
                 project_id INTEGER NOT NULL,
                 project_name TEXT NOT NULL,
+
+                FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
+                    ON UPDATE CASCADE
+                    ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS timers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                workspace_id TEXT NOT NULL,
+                description TEXT NOT NULL,
+                project_id TEXT,
+                billable INTEGER,
+                tags TEXT,
+                resumed INTEGER NOT NULL,
 
                 FOREIGN KEY (workspace_id) REFERENCES workspaces (workspace_id)
                     ON UPDATE CASCADE
@@ -355,4 +369,41 @@ class Database:
             VALUES ("{workspace_id}", "{project_id}", "{project_name}");
             '''
         )
+        self.connection.commit()
+
+    @setup_and_teardown
+    def add_paused_timer_data(self, workspace_id: str, description: str,
+                              project_id: Optional[str], billable: bool,
+                              tags: Optional[List[str]]) -> None:
+        """ Generate an INSERT sql statement with the paused timer data and commit it to the database.
+
+        Args:
+            workspace_id (str): The workspace ID that the timer was running on.
+            description (str): The description of the timer.
+            project_id (Optional[str]): The project ID for the timer OR None if no project ID used.
+            billable (bool): Boolean if the timer is billable or not
+            tags (Optional[List[str]]): List of strings of the tags OR None if not tags were used.
+        """
+
+        sql_statement = f'''\
+                        INSERT INTO timers (workspace_id, description, project_id, billable, tags, resumed)\
+                        VALUES ("{workspace_id}", "{description}",\
+                        '''
+
+        if project_id is None:
+            sql_statement += "NULL, "
+        else:
+            sql_statement += f'"{project_id}", '
+
+        sql_statement += f"{int(billable)}, "
+
+        if tags is None:
+            sql_statement += "NULL, "
+        else:
+            sql_statement += f'"{",".join(tags)}", '
+
+        # Set the resumed column to false.
+        sql_statement += "0);"
+
+        self.cursor.execute(sql_statement)
         self.connection.commit()
