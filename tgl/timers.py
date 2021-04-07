@@ -103,7 +103,7 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
 
     if response.status_code == 200:
         if for_resume:
-            utils.add_previous_timer_to_config(response.json())
+            utils.add_paused_data_to_database(response.json())
             print(f'Timer "{timer_description}" paused.\nResume using "tgl resume".')
         else:
             utils.remove_previous_timer_from_config()

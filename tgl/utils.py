@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from typing import Tuple, Dict
+from typing import Any, List, Optional, Tuple, Dict
 
 from tgl.database import Database
 
@@ -64,29 +64,27 @@ def add_user_data_to_database(authentication: Tuple[str, str]) -> None:
     _add_projects_to_database(authentication)
 
 
-def add_previous_timer_to_config(timer_data: dict) -> None:
+def add_paused_data_to_database(timer_data: Dict[Any, Any]) -> None:
     data = timer_data['data']
 
-    config['PREVIOUS_TIMER']['wid'] = str(data['wid'])
-    config['PREVIOUS_TIMER']['description'] = data['description']
+    workspace_id = str(data['wid'])
+    description = data['description']
 
+    project_id: Optional[str]
     try:
-        config['PREVIOUS_TIMER']['pid'] = str(data['pid'])
+        project_id = str(data['pid'])
     except KeyError:
-        config['PREVIOUS_TIMER']['pid'] = ""
+        project_id = None
 
+    billable = data['billable']
+
+    tags: Optional[List[str]]
     try:
-        config['PREVIOUS_TIMER']['billable'] = data['billable']
+        tags = data['tags']
     except KeyError:
-        config['PREVIOUS_TIMER']['billable'] = ""
+        tags = None
 
-    try:
-        config['PREVIOUS_TIMER']['tags'] = data['tags']
-    except KeyError:
-        config['PREVIOUS_TIMER']['tags'] = ""
-
-    with open(config_file_path, 'w') as f:
-        json.dump(config, f, indent=4)
+    Database().add_paused_timer_data(workspace_id, description, project_id, billable, tags)
 
 
 def remove_previous_timer_from_config():
