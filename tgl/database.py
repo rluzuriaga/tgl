@@ -227,6 +227,23 @@ class Database:
         return output
 
     @setup_and_teardown
+    def get_projects_url(self) -> str:
+        """ Get the api url that is used to retrieve & add projects.
+
+        Returns:
+            str: URL
+        """
+        output = self.cursor.execute(
+            '''
+            SELECT url
+            FROM api_url
+            WHERE name = "projects";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
     def get_list_of_workspace_ids(self) -> List[str]:
         """ Get a list of all workspace IDs.
 
@@ -277,6 +294,26 @@ class Database:
             SELECT workspace_id
             FROM workspaces
             WHERE workspace_name="{workspace_name}";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
+    def get_workspace_name_from_workspace_id(self, workspace_id: str) -> str:
+        """ Get the workspace name from a given workspace ID.
+
+        Args:
+            workspace_id (str): The workspace ID that is searched on the database.
+
+        Returns:
+            str: Workspace Name.
+        """
+        output = self.cursor.execute(
+            f'''
+            SELECT workspace_name
+            FROM workspaces
+            WHERE workspace_id = "{workspace_id}";
             '''
         ).fetchall()[0][0]
 
