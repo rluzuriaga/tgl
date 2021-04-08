@@ -240,11 +240,15 @@ def command_pause(parser, args) -> None:
 
 
 def command_resume(parser, args) -> None:
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
+
     check_if_setup_is_needed()
 
-    authentication = utils.auth_from_config()
+    authentication = Database().get_user_authentication()
 
-    # Check if there is already a timer running & give choice if there is
+    # Check if there is already a timer running
     if utils.is_timer_running(authentication):
         sys.exit('There is a timer currently running.')
 
