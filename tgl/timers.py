@@ -113,25 +113,23 @@ def stop_timer(authentication: Tuple[str, str], for_resume: bool = False) -> Non
 
 
 def resume_timer(authentication: Tuple[str, str]) -> None:
-    if len(config['PREVIOUS_TIMER']) == 0:
+    paused_timer_data_tuple = Database().get_paused_timer()
+
+    if len(paused_timer_data_tuple) == 0:
         sys.exit('There is no paused timer. Use "tgl start" to start a new timer.')
 
-    url = config['URI']['START']
+    url = Database().get_start_timer_url()
 
     header = {"Content-Type": "application/json", }
 
-    description = config['PREVIOUS_TIMER']['description']
-    workspace_id = config['PREVIOUS_TIMER']['wid']
-    project_id = config['PREVIOUS_TIMER']['pid']
-    tags = config['PREVIOUS_TIMER']['tags']
-    billable = config['PREVIOUS_TIMER']['billable']
+    workspace_id, description, project_id, billable, tags = paused_timer_data_tuple
 
     data = {'time_entry': {
         'description': description,
         'wid': workspace_id,
-        'pid': project_id,
-        'tags': tags,
-        'billable': billable,
+        'pid': "" if project_id is None else project_id,
+        'tags': "" if tags is None else tags,
+        'billable': bool(billable),
         'created_with': 'tgl'}
     }
 
@@ -144,7 +142,7 @@ def resume_timer(authentication: Tuple[str, str]) -> None:
 
     if response.status_code == 200:
         print(f'Timer "{description}" resumed.')
-        utils.remove_previous_timer_from_config()
+        Database().set_paused_timer_as_resumed()
     else:
         sys.exit(f"ERROR: Timer could not be resumed. Response: {response.status_code}")
 
