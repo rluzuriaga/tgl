@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from functools import wraps
-from typing import Any, Callable, List, Tuple, Optional
+from typing import Any, Callable, List, Tuple, Optional, Union
 
 from tgl.config import DatabasePath
 
@@ -340,6 +340,32 @@ class Database:
         ).fetchall()[0][0]
 
         return output
+
+    @setup_and_teardown
+    def get_paused_timer(self) -> Union[Tuple[()], Tuple[str, str, Optional[str], int, Optional[List[str]]]]:
+        output = self.cursor.execute(
+            '''
+            SELECT workspace_id, description, project_id, billable, tags
+            FROM timers
+            WHERE resumed=0;
+            '''
+        ).fetchall()
+
+        try:
+            return output[0]
+        except IndexError:
+            return ()
+
+    @setup_and_teardown
+    def set_paused_timer_as_resumed(self) -> None:
+        self.cursor.execute(
+            '''
+            UPDATE timers
+            SET resumed = 1
+            WHERE resumed = 0;
+            '''
+        )
+        self.connection.commit()
 
     @setup_and_teardown
     def add_workspaces_data(self, workspace_id: str, workspace_name: str) -> None:
