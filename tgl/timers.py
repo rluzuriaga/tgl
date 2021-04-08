@@ -148,7 +148,7 @@ def resume_timer(authentication: Tuple[str, str]) -> None:
 
 
 def create_project(authentication: Tuple[str, str], workspace_id: str, project_name: str) -> None:
-    url = config['URI']['PROJECTS']
+    url = Database().get_projects_url()
     header = {"Content-Type": "application/json", }
 
     data = {'project': {
@@ -163,7 +163,7 @@ def create_project(authentication: Tuple[str, str], workspace_id: str, project_n
         auth=authentication
     )
 
-    workspace_name = config["WORKSPACES"][str(workspace_id)]
+    workspace_name = Database().get_workspace_name_from_workspace_id(workspace_id)
 
     if response.status_code == 200:
         print(f'\nProject "{project_name}" has been created in the "{workspace_name}" workspace.')
