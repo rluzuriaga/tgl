@@ -256,9 +256,13 @@ def command_resume(parser, args) -> None:
 
 
 def command_create(parser, args) -> None:
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
+
     check_if_setup_is_needed()
 
-    authentication = utils.auth_from_config()
+    authentication = Database().get_user_authentication()
 
     if args.request == 'project':
         workspace_id = utils.workspace_selection(verbose=False)
