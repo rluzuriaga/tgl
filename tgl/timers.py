@@ -174,14 +174,18 @@ def create_project(authentication: Tuple[str, str], workspace_id: str, project_n
 
 def delete_project(authentication: Tuple[str, str]) -> None:
     deleting_pid = utils.get_project_id_from_user_selection()
-    url = config['URI']['PROJECTS'] + f'/{deleting_pid}'
+
+    url = Database().get_projects_url() + f'/{deleting_pid}'
 
     response = requests.delete(
         url=url,
         auth=authentication
     )
 
+    project_name = Database().get_project_name_from_project_id(deleting_pid)
+    workspace_name = Database().get_workspace_name_from_project_id(deleting_pid)
+
     if response.status_code == 200:
-        print(f'\nProject was deleted.')
+        print(f'\nProject "{project_name}" was deleted from the "{workspace_name}" workspace.')
     else:
         sys.exit(f'\nERROR: Project could not be deleted.\nResponse: "{response.text}"')
