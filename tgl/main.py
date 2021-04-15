@@ -278,22 +278,27 @@ def command_create(parser, args) -> None:
 
 
 def command_delete(parser, args) -> None:
+    # Check if the user entered a custom database and set it as the DatabasePath
+    if args.database:
+        DatabasePath.set(args.database[0])
+
     check_if_setup_is_needed()
 
-    if not utils.are_there_projects():
-        sys.exit(
-            'There are no projects available in the config file.\nIf you recently '
-            'added a project to your account, please use "tgl reconfig" to reconfigure your data.'
-        )
-
-    authentication = utils.auth_from_config()
+    authentication = Database().get_user_authentication()
 
     if args.request == 'project':
+        if not Database().are_there_projects():
+            sys.exit(
+                'There are no projects available in the config file.\nIf you recently '
+                'added a project to your account, please use "tgl reconfig" to reconfigure your data.'
+            )
+
         timers.delete_project(
             authentication=authentication
         )
 
-    command_reconfig(parser, args)
+        # TODO: Need to figure out a better way to reconfig the db
+        command_reconfig(parser, args)
 
 
 def check_if_setup_is_needed() -> None:
