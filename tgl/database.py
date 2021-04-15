@@ -379,6 +379,66 @@ class Database:
         return output
 
     @setup_and_teardown
+    def get_project_name_from_project_id(self, project_id: str) -> str:
+        """ Get the project name from a given project ID.
+
+        Args:
+            project_id (str): Project ID.
+
+        Returns:
+            str: The project name.
+        """
+        output = self.cursor.execute(
+            f'''
+            SELECT project_name
+            FROM projects
+            WHERE project_id = "{project_id}";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
+    def get_workspace_name_from_project_id(self, project_id: str) -> str:
+        """ Get the workspace name from a given project ID.
+
+        Args:
+            project_id (str): Project ID.
+
+        Returns:
+            str: Workspace name.
+        """
+        output = self.cursor.execute(
+            f'''
+            SELECT w.workspace_name
+            FROM workspaces w
+            INNER JOIN projects p
+            ON w.workspace_id = p.workspace_id
+            WHERE p.project_id = "{project_id}";
+            '''
+        ).fetchall()[0][0]
+
+        return output
+
+    @setup_and_teardown
+    def get_projects_from_all_workspaces(self) -> List[Tuple[str, str, str]]:
+        """ Get a list of tuples with the projects from all the workspaces
+
+        Returns:
+            List[Tuple[str, str, str]]: A list of tuples with the project name, workspace name, and project ID.
+        """
+        output = self.cursor.execute(
+            '''
+            SELECT DISTINCT p.project_name, w.workspace_name, p.project_id
+            FROM projects p
+            INNER JOIN workspaces w
+            ON p.workspace_id = w.workspace_id;
+            '''
+        ).fetchall()
+
+        return output
+
+    @setup_and_teardown
     def get_paused_timer(self) -> Union[Tuple[()], Tuple[str, str, Optional[str], int, Optional[List[str]]]]:
         output = self.cursor.execute(
             '''
