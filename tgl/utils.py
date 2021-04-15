@@ -201,23 +201,26 @@ def get_default_workspace():
 
 
 def get_project_id_from_user_selection() -> str:
-    all_project_dict = config['PROJECTS']
-    selection_dict: Dict[str, str] = {}
+    projects_list = Database().get_projects_from_all_workspaces()
 
-    for i, project_dic in enumerate(all_project_dict.items(), start=1):
-        wid: str = project_dic[0]
-        workspace_name = config['WORKSPACES'][wid]
+    project_title_length = len(max([i[1] for i in projects_list], key=len)) + 14
+    workspace_title_length = len(max([i[0] for i in projects_list], key=len)) + 2
 
-        workspace_output = f"Workspace: {workspace_name}"
-        workspace_output = workspace_output + "\n" + ("-" * len(workspace_output))
-        print(workspace_output)
+    print("PROJECT NAME".center(project_title_length), end='  ')
+    print("WORKSPACE NAME".center(workspace_title_length))
+    print("-" * (workspace_title_length + project_title_length))
 
-        for pid, project_name in project_dic[1].items():
-            selection_dict[str(i)] = pid
-            print("    " + str(i) + ": " + project_name)
+    selection_dict: Dict[int, str] = {}
+    for i, (project_name, workspace_name, project_id) in enumerate(projects_list, start=1):
+        print(f" {i}: {project_name.ljust(project_title_length)}{workspace_name}")
+        selection_dict[i] = project_id
 
-        print()
+    user_selection = input("\nPlease enter the number next to the project you want to delete: ")
 
-    user_selection = input("\nPlease enter the number of the project you want to delete: ")
+    try:
+        user_selection_int = int(user_selection)
+        selected_project_id = selection_dict[user_selection_int]
+    except (ValueError, KeyError):
+        sys.exit("\nERROR: Selection not valid. No project deleted.")
 
-    return selection_dict[user_selection]
+    return selected_project_id
